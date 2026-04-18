@@ -13,7 +13,8 @@ test('app loads with loader overlay', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('#loader')).toBeVisible();
   await expect(page.locator('#continueBtn')).toBeVisible();
-  await expect(page.locator('#demoBtn')).toBeVisible();
+  await expect(page.locator('#demoSUVBtn')).toBeVisible();
+  await expect(page.locator('#demoTruckBtn')).toBeVisible();
 });
 
 test('continue button loads app and hides loader', async ({ page }) => {
@@ -25,7 +26,7 @@ test('continue button loads app and hides loader', async ({ page }) => {
 
 test('demo button loads sample data and hides loader', async ({ page }) => {
   await page.goto('/');
-  await page.click('#demoBtn');
+  await page.click('#demoSUVBtn');
   await expect(page.locator('#loader')).toBeHidden();
   await expect(page.locator('#vehicleSelect')).toContainText('Wrangler Demo');
 });
