@@ -50,7 +50,9 @@
     .loader-card { max-width: 480px; background: rgba(20, 26, 35, 0.96); border: 1px solid var(--border); border-radius: 1rem; padding: 2rem; text-align: center; }
     body.light .loader-card { background: rgba(255, 255, 255, 0.98); color: var(--light-text); border-color: var(--light-border); }
     .loader-actions { display: flex; flex-direction: column; gap: 1rem; margin-top: 1.5rem; }
+    .loader-secondary { display: flex; gap: 1rem; margin-top: 1rem; justify-content: center; }
     .loader button { width: 100%; }
+    .loader-secondary .btn { width: auto; }
     .loader-note { opacity: 0.8; margin-top: 1rem; }
     .loader-spinner { width: 40px; height: 40px; border: 4px solid var(--border); border-top: 4px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin: 1rem auto 0; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -224,6 +226,10 @@
         <button id="continueBtn" class="btn" data-i18n="continueBtn">Continue where you left off</button>
         <button id="demoBtn" class="btn" data-i18n="demoBtn">See demo</button>
       </div>
+      <div class="loader-secondary">
+        <button id="langToggleLoader" class="btn" data-i18n="langToggle">EN</button>
+        <button id="resetBtn" class="btn" data-i18n="resetData">Reset Data</button>
+      </div>
       <p class="loader-note" data-i18n="loaderNote">Demo content is sample-only and safe to explore.</p>
       <div id="loaderSpinner" class="loader-spinner hidden"></div>
     </div>
@@ -296,7 +302,8 @@
         loaderDescription: "Choose how to start. Your data never leaves this device.",
         continueBtn: "Continue where you left off",
         demoBtn: "See demo",
-        loaderNote: "Demo content is sample-only and safe to explore."
+        loaderNote: "Demo content is sample-only and safe to explore.",
+        resetData: "Reset Data"
       },
       es: {
         appTitle: "BitEric Jeep",
@@ -363,7 +370,8 @@
         loaderDescription: "Elige cómo empezar. Tus datos nunca salen de este dispositivo.",
         continueBtn: "Continuar donde lo dejaste",
         demoBtn: "Ver demo",
-        loaderNote: "El contenido de demo es un ejemplo seguro para explorar."
+        loaderNote: "El contenido de demo es un ejemplo seguro para explorar.",
+        resetData: "Restablecer Datos"
       }
     };
 
@@ -717,6 +725,21 @@
 
     document.getElementById('langToggle').addEventListener('click', () => {
       setLang(lang === 'en' ? 'es' : 'en');
+    });
+
+    document.getElementById('langToggleLoader').addEventListener('click', () => {
+      setLang(lang === 'en' ? 'es' : 'en');
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', async () => {
+      if (confirm(I18N[lang].resetData + '?')) {
+        await db.clear('vehicles');
+        await db.clear('maintenance');
+        await db.clear('fuel');
+        await db.clear('mods');
+        localStorage.clear();
+        location.reload();
+      }
     });
 
     document.getElementById('themeToggle').addEventListener('click', () => {
