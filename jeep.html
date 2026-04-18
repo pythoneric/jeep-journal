@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Jeep Journal</title>
+  <title>BitEric Jeep</title>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon-192.png">
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -58,7 +58,7 @@
 </head>
 <body>
   <header>
-    <div class="app-title" data-i18n="appTitle">Jeep Journal</div>
+    <div class="app-title" data-i18n="appTitle">BitEric Jeep</div>
     <div class="controls">
       <select id="vehicleSelect"></select>
       <button id="langToggle" data-i18n="langToggle">EN</button>
@@ -218,7 +218,7 @@
   </main>
   <div id="loader" class="loader">
     <div class="loader-card">
-      <h1 data-i18n="loaderTitle">Jeep Journal</h1>
+      <h1 data-i18n="loaderTitle">BitEric Jeep</h1>
       <p data-i18n="loaderDescription">Choose how to start. Your data never leaves this device.</p>
       <div class="loader-actions">
         <button id="continueBtn" class="btn" data-i18n="continueBtn">Continue where you left off</button>
@@ -232,7 +232,7 @@
     // I18N
     const I18N = {
       en: {
-        appTitle: "Jeep Journal",
+        appTitle: "BitEric Jeep",
         langToggle: "EN",
         themeToggle: "🌙",
         installBtn: "Install",
@@ -291,15 +291,15 @@
         reloadCache: "Reload Cache",
         addVehicle: "Add Vehicle",
         addVehicleBtn: "Add Vehicle",
-        loading: "Loading Jeep Journal...",
-        loaderTitle: "Jeep Journal",
+        loading: "Loading BitEric Jeep...",
+        loaderTitle: "BitEric Jeep",
         loaderDescription: "Choose how to start. Your data never leaves this device.",
         continueBtn: "Continue where you left off",
         demoBtn: "See demo",
         loaderNote: "Demo content is sample-only and safe to explore."
       },
       es: {
-        appTitle: "Diario Jeep",
+        appTitle: "BitEric Jeep",
         langToggle: "ES",
         themeToggle: "🌙",
         installBtn: "Instalar",
@@ -358,8 +358,8 @@
         reloadCache: "Recargar Caché",
         addVehicle: "Agregar Vehículo",
         addVehicleBtn: "Agregar Vehículo",
-        loading: "Cargando Diario Jeep...",
-        loaderTitle: "Diario Jeep",
+        loading: "Cargando BitEric Jeep...",
+        loaderTitle: "BitEric Jeep",
         loaderDescription: "Elige cómo empezar. Tus datos nunca salen de este dispositivo.",
         continueBtn: "Continuar donde lo dejaste",
         demoBtn: "Ver demo",
@@ -445,7 +445,7 @@
       }
     }
 
-    const db = new DB('jeep-journal');
+    const db = new DB('biteric-jeep');
     const stores = [
       { name: 'vehicles', keyPath: 'id', indexes: [] },
       { name: 'maintenance', keyPath: 'id', indexes: [{ name: 'vehicleId', keyPath: 'vehicleId' }] },
@@ -686,7 +686,7 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'jeep-journal-data.json';
+      a.download = 'biteric-jeep-data.json';
       a.click();
     });
 

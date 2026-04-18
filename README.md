@@ -1,4 +1,4 @@
-# Jeep Journal
+# BitEric Jeep
 
 Personal journal for Jeep Wrangler and Gladiator vehicles. Tracks maintenance, fuel, and modifications offline.
 
@@ -25,7 +25,7 @@ Replace `icon-192.png` and `icon-512.png` with your own 192x192 and 512x512 PNG 
 
 ---
 
-# Diario Jeep
+# Diario BitEric Jeep
 
 Diario personal para vehículos Jeep Wrangler y Gladiator. Rastrea mantenimiento, combustible y modificaciones sin conexión.
 

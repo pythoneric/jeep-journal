@@ -1,4 +1,4 @@
-const CACHE_NAME = 'jeep-journal-v1'; // Bump this when jeep.html changes
+const CACHE_NAME = 'biteric-jeep-v1'; // Bump this when jeep.html changes
 
 const urlsToCache = [
   'jeep.html',

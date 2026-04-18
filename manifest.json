@@ -1,6 +1,6 @@
 {
-  "name": "Jeep Journal",
-  "short_name": "Jeep",
+  "name": "BitEric Jeep",
+  "short_name": "BitEric Jeep",
   "description": "Personal journal for Jeep vehicles",
   "start_url": "jeep.html",
   "display": "standalone",
