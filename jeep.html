@@ -58,6 +58,7 @@
       <select id="vehicleSelect"></select>
       <button id="langToggle" data-i18n="langToggle">EN</button>
       <button id="themeToggle" data-i18n="themeToggle">🌙</button>
+      <button id="refreshBtn" data-i18n="refreshBtn">🔄</button>
       <button id="installBtn" class="hidden" data-i18n="installBtn">Install</button>
     </div>
   </header>
@@ -219,6 +220,7 @@
         langToggle: "EN",
         themeToggle: "🌙",
         installBtn: "Install",
+        refreshBtn: "🔄",
         tabDashboard: "Dashboard",
         tabMaintenance: "Maintenance",
         tabFuel: "Fuel",
@@ -280,6 +282,7 @@
         langToggle: "ES",
         themeToggle: "🌙",
         installBtn: "Instalar",
+        refreshBtn: "🔄",
         tabDashboard: "Panel",
         tabMaintenance: "Mantenimiento",
         tabFuel: "Combustible",
@@ -692,6 +695,10 @@
 
     document.getElementById('themeToggle').addEventListener('click', () => {
       setTheme(theme === 'dark' ? 'light' : 'dark');
+    });
+
+    document.getElementById('refreshBtn').addEventListener('click', () => {
+      location.reload();
     });
 
     document.querySelectorAll('.tab').forEach(tab => {
