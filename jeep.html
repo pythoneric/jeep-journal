@@ -30,7 +30,8 @@
     select, button { background: var(--accent); color: white; border: none; padding: 0.5rem; border-radius: 0.25rem; cursor: pointer; }
     body.light select, body.light button { background: var(--light-accent); }
     .tabs { display: flex; background: var(--card); border-bottom: 1px solid var(--border); overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    .tab { flex: 1 0 auto; min-width: 100px; padding: 1rem; text-align: center; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; }
+    .tab { flex: 1 1 0; min-width: 0; padding: 1rem 0.5rem; text-align: center; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    @media (max-width: 480px) { .tab { padding: 0.75rem 0.25rem; font-size: 0.85rem; } }
     .tab.active { border-bottom-color: var(--accent); }
     body.light .tab.active { border-bottom-color: var(--light-accent); }
     .content { padding: 1rem; }
@@ -102,6 +103,20 @@
     body.light .reminder-btn:hover { background: rgba(0,0,0,0.06); }
     .install-status { margin-top: 0.5rem; padding: 0.5rem; border: 1px dashed var(--border); border-radius: 0.25rem; font-size: 0.85rem; }
     body.light .install-status { border-color: var(--light-border); }
+    .lightbox { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); display: none; align-items: center; justify-content: center; z-index: 10001; cursor: zoom-out; padding: 1rem; }
+    .lightbox.open { display: flex; }
+    .lightbox img { max-width: 100%; max-height: 100%; border-radius: 0.25rem; box-shadow: 0 4px 32px rgba(0,0,0,0.6); }
+    .modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); display: none; align-items: center; justify-content: center; z-index: 10002; padding: 1rem; }
+    .modal.open { display: flex; }
+    .modal-card { background: var(--card); color: var(--text); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.5rem; max-width: 420px; width: 100%; }
+    body.light .modal-card { background: var(--light-card); color: var(--light-text); border-color: var(--light-border); }
+    .modal-card dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 0.5rem 1rem; }
+    .modal-card dt { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
+    body.drag-over::after { content: attr(data-drag-label); position: fixed; inset: 1rem; border: 3px dashed var(--accent); background: rgba(217, 119, 6, 0.15); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 700; color: var(--accent); z-index: 10000; pointer-events: none; border-radius: 0.5rem; }
+    body.light.drag-over::after { border-color: var(--light-accent); color: var(--light-accent); background: rgba(146, 64, 14, 0.1); }
+    button:focus-visible, .tab:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, .del-btn:focus-visible, .edit-btn:focus-visible, .reminder-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    body.light :focus-visible { outline-color: var(--light-accent); }
+    .photo-thumb { cursor: zoom-in; }
     .vehicle-meta { opacity: 0.8; font-size: 0.9rem; margin-top: 0.25rem; }
     .vehicle-meta span { margin-right: 0.75rem; white-space: nowrap; }
     .reminder-item.due-soon { color: #c2410c; }
@@ -128,13 +143,13 @@
       <button id="installBtn" class="hidden" data-i18n="installBtn">Install</button>
     </div>
   </header>
-  <nav class="tabs">
-    <div class="tab active" data-tab="dashboard" data-i18n="tabDashboard">Dashboard</div>
-    <div class="tab" data-tab="maintenance" data-i18n="tabMaintenance">Maintenance</div>
-    <div class="tab" data-tab="fuel" data-i18n="tabFuel">Fuel</div>
-    <div class="tab" data-tab="mods" data-i18n="tabMods">Mods</div>
-    <div class="tab" data-tab="parts" data-i18n="tabParts">Parts</div>
-    <div class="tab" data-tab="settings" data-i18n="tabSettings">Settings</div>
+  <nav class="tabs" role="tablist" aria-label="Primary navigation">
+    <div class="tab active" data-tab="dashboard" role="tab" tabindex="0" data-i18n="tabDashboard">Dashboard</div>
+    <div class="tab" data-tab="maintenance" role="tab" tabindex="0" data-i18n="tabMaintenance">Maintenance</div>
+    <div class="tab" data-tab="fuel" role="tab" tabindex="0" data-i18n="tabFuel">Fuel</div>
+    <div class="tab" data-tab="mods" role="tab" tabindex="0" data-i18n="tabMods">Mods</div>
+    <div class="tab" data-tab="parts" role="tab" tabindex="0" data-i18n="tabParts">Parts</div>
+    <div class="tab" data-tab="settings" role="tab" tabindex="0" data-i18n="tabSettings">Settings</div>
   </nav>
   <main class="content">
     <div id="dashboard" class="tab-content">
@@ -180,9 +195,15 @@
           <canvas id="costChart" class="chart"></canvas>
         </div>
       </div>
-      <div class="card">
-        <h3 data-i18n="totalOwnershipCost">Total cost of ownership</h3>
-        <div id="tcoCard"></div>
+      <div class="g2">
+        <div class="card">
+          <h3 data-i18n="totalOwnershipCost">Total cost of ownership</h3>
+          <div id="tcoCard"></div>
+        </div>
+        <div class="card">
+          <h3 data-i18n="costPerMile">Cost per mile</h3>
+          <div id="cpmCard"></div>
+        </div>
       </div>
       <div class="card">
         <h3 data-i18n="monthlyTrend">Monthly spend (last 12 months)</h3>
@@ -372,7 +393,7 @@
         <button id="deleteVehicleBtn" class="btn btn-danger" data-i18n="deleteVehicle">Delete active vehicle</button>
         <button id="exportBtn" class="btn" data-i18n="exportData">Export Data</button>
         <button id="exportCsvBtn" class="btn" data-i18n="exportCsv">Export CSV</button>
-        <input type="file" id="importFile" accept=".json">
+        <input type="file" id="importFile" accept=".json,.csv">
         <button id="importBtn" class="btn" data-i18n="importData">Import Data</button>
         <div id="cacheInfo"></div>
         <button id="reloadBtn" class="btn" data-i18n="reloadCache">Reload Cache</button>
@@ -380,7 +401,19 @@
       </div>
     </div>
   </main>
-  <div id="toast" class="toast hidden"><span id="toastMsg"></span><button type="button" id="toastAction" class="toast-action"></button></div>
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"><span id="toastMsg"></span><button type="button" id="toastAction" class="toast-action"></button></div>
+  <div id="lightbox" class="lightbox" role="dialog" aria-label="Photo viewer"><img id="lightboxImg" alt=""></div>
+  <div id="shortcutsModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="shortcutsTitle">
+    <div class="modal-card">
+      <h3 id="shortcutsTitle" data-i18n="shortcutsTitle">Keyboard shortcuts</h3>
+      <dl>
+        <dt>1–6</dt><dd data-i18n="shortcutTabs">Switch tabs</dd>
+        <dt>Esc</dt><dd data-i18n="shortcutEscape">Cancel edit</dd>
+        <dt>?</dt><dd data-i18n="shortcutHelp">Show this help</dd>
+      </dl>
+      <button type="button" id="shortcutsClose" class="btn" style="margin-top: 1rem;" data-i18n="closeBtn">Close</button>
+    </div>
+  </div>
   <div id="loader" class="loader">
     <div class="loader-card">
       <h1 data-i18n="loaderTitle">BitEric Jeep</h1>
@@ -581,7 +614,22 @@
         installHelpIos: "On iOS: tap Share → Add to Home Screen",
         installHelpOther: "Use your browser menu → Install / Add to Home Screen",
         missingCost: "Enter either Total Cost or $/gallon.",
-        enterOne: "Fill in the form first."
+        enterOne: "Fill in the form first.",
+        costPerMile: "Cost per mile",
+        milesDriven: "miles driven",
+        noMileageYet: "Need at least one fuel entry for $/mi",
+        cacheStatus: "Cache status",
+        cacheItems: "cached items",
+        cacheSize: "Cache size",
+        reloadingCache: "Clearing cache and reloading…",
+        shortcutsTitle: "Keyboard shortcuts",
+        shortcutTabs: "1–6 — Switch tabs",
+        shortcutEscape: "Esc — Cancel edit",
+        shortcutHelp: "? — Show this help",
+        closeBtn: "Close",
+        dropToImport: "Drop JSON or CSV file to import",
+        importSuccess: "Imported successfully.",
+        csvUnknownStore: "Unknown CSV type (expected filename containing maintenance/fuel/mods/parts)"
       },
       es: {
         appTitle: "BitEric Jeep",
@@ -756,7 +804,22 @@
         installHelpIos: "En iOS: toca Compartir → Agregar a inicio",
         installHelpOther: "Usa el menú de tu navegador → Instalar / Agregar a inicio",
         missingCost: "Ingresa el costo total o $/galón.",
-        enterOne: "Completa el formulario primero."
+        enterOne: "Completa el formulario primero.",
+        costPerMile: "Costo por milla",
+        milesDriven: "millas recorridas",
+        noMileageYet: "Se necesita al menos una entrada de combustible para $/mi",
+        cacheStatus: "Estado del caché",
+        cacheItems: "elementos en caché",
+        cacheSize: "Tamaño del caché",
+        reloadingCache: "Limpiando caché y recargando…",
+        shortcutsTitle: "Atajos de teclado",
+        shortcutTabs: "1–6 — Cambiar pestañas",
+        shortcutEscape: "Esc — Cancelar edición",
+        shortcutHelp: "? — Mostrar esta ayuda",
+        closeBtn: "Cerrar",
+        dropToImport: "Suelta un archivo JSON o CSV para importar",
+        importSuccess: "Importado con éxito.",
+        csvUnknownStore: "Tipo CSV desconocido (se espera archivo con maintenance/fuel/mods/parts)"
       }
     };
 
@@ -936,8 +999,8 @@
     function escHtml(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
     function rowActions(id) {
       return `<span class="row-actions">
-        <button type="button" class="edit-btn" data-id="${id}" aria-label="${t('editBtn')}">✎</button>
-        <button type="button" class="del-btn" data-id="${id}" aria-label="${t('deleteBtn')}">✕</button>
+        <button type="button" class="edit-btn" data-id="${id}" aria-label="${t('editBtn')}" title="${t('editBtn')}">✎</button>
+        <button type="button" class="del-btn" data-id="${id}" aria-label="${t('deleteBtn')}" title="${t('deleteBtn')}">✕</button>
       </span>`;
     }
     async function confirmDelete(storeName, id, reloadFn) {
@@ -1168,6 +1231,24 @@
         <div class="stat-big">$${tcoTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
         <div class="stat-sub">${t('tcoMaintenance')} $${maintCost.toFixed(2)} · ${t('tcoFuel')} $${fuelCost.toFixed(2)} · ${t('tcoMods')} $${modCost.toFixed(2)}</div>
       `;
+
+      // Cost per mile — use max(odometer) - min(odometer) from fuel entries
+      const cpmCard = document.getElementById('cpmCard');
+      const fuelOdos = allFuel.map(f => f.odometer).filter(n => n > 0);
+      if (fuelOdos.length >= 2) {
+        const miles = Math.max(...fuelOdos) - Math.min(...fuelOdos);
+        if (miles > 0) {
+          const cpm = tcoTotal / miles;
+          cpmCard.innerHTML = `
+            <div class="stat-big">$${cpm.toFixed(3)}</div>
+            <div class="stat-sub">${miles.toLocaleString()} ${t('milesDriven')}</div>
+          `;
+        } else {
+          cpmCard.innerHTML = `<p class="stat-sub">${t('noMileageYet')}</p>`;
+        }
+      } else {
+        cpmCard.innerHTML = `<p class="stat-sub">${t('noMileageYet')}</p>`;
+      }
 
       // Monthly spend trend (last 12 months)
       const months = [];
@@ -2023,23 +2104,7 @@ ${mods.map(m => `<tr><td>${esc(m.date)}</td><td>${esc(m.category)}</td><td>${esc
     document.getElementById('importBtn').addEventListener('click', async () => {
       const file = document.getElementById('importFile').files[0];
       if (!file) return;
-      let data;
-      try { data = JSON.parse(await file.text()); }
-      catch { showToast(t('importInvalid'), 5000); return; }
-      const err = validateImport(data);
-      if (err) { showToast(t('importInvalid') + ' (' + err + ')', 6000); return; }
-      if (!confirm('Replace all data?')) return;
-      await db.clear('vehicles');
-      await db.clear('maintenance');
-      await db.clear('fuel');
-      await db.clear('mods');
-      await db.clear('parts');
-      for (const v of data.vehicles) await db.add('vehicles', v);
-      for (const m of data.maintenance || []) await db.add('maintenance', m);
-      for (const f of data.fuel || []) await db.add('fuel', f);
-      for (const mod of data.mods || []) await db.add('mods', mod);
-      for (const p of data.parts || []) await db.add('parts', p);
-      loadVehicles();
+      await handleImportFile(file);
     });
 
     // Events
@@ -2157,25 +2222,164 @@ ${mods.map(m => `<tr><td>${esc(m.date)}</td><td>${esc(m.category)}</td><td>${esc
 
     document.querySelectorAll('.tab').forEach(tab => {
       tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+      tab.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); switchTab(tab.dataset.tab); }
+      });
     });
 
-    // Keyboard: 1-6 switches tabs, Escape cancels edit
+    // Keyboard: 1-6 switches tabs, ? opens help, Escape cancels edit / closes modals
     const tabOrder = ['dashboard', 'maintenance', 'fuel', 'mods', 'parts', 'settings'];
     document.addEventListener('keydown', (e) => {
       if (document.getElementById('loader').style.display !== 'none') return;
       const tag = document.activeElement?.tagName;
       const inField = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
-      if (!inField && !e.metaKey && !e.ctrlKey && !e.altKey && /^[1-6]$/.test(e.key)) {
-        e.preventDefault();
-        switchTab(tabOrder[+e.key - 1]);
+      if (!inField && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        if (/^[1-6]$/.test(e.key)) {
+          e.preventDefault();
+          switchTab(tabOrder[+e.key - 1]);
+          return;
+        }
+        if (e.key === '?') {
+          e.preventDefault();
+          document.getElementById('shortcutsModal').classList.add('open');
+          document.getElementById('shortcutsClose').focus();
+          return;
+        }
       }
       if (e.key === 'Escape') {
+        const lb = document.getElementById('lightbox');
+        const sm = document.getElementById('shortcutsModal');
+        if (lb.classList.contains('open')) { lb.classList.remove('open'); return; }
+        if (sm.classList.contains('open')) { sm.classList.remove('open'); return; }
         if (editState.maintenance) { document.getElementById('maintenanceForm').reset(); exitMaintenanceEdit(); }
         if (editState.fuel) { document.getElementById('fuelForm').reset(); exitFuelEdit(); }
         if (editState.mods) { document.getElementById('modsForm').reset(); exitModsEdit(); }
         if (editState.parts) { document.getElementById('partsForm').reset(); exitPartsEdit(); }
       }
     });
+
+    document.getElementById('shortcutsClose').addEventListener('click', () => {
+      document.getElementById('shortcutsModal').classList.remove('open');
+    });
+    document.getElementById('shortcutsModal').addEventListener('click', (e) => {
+      if (e.target.id === 'shortcutsModal') e.target.classList.remove('open');
+    });
+
+    // Lightbox: click any .photo-thumb to open full size
+    document.addEventListener('click', (e) => {
+      const thumb = e.target.closest('.photo-thumb');
+      if (thumb && thumb.src) {
+        const lb = document.getElementById('lightbox');
+        document.getElementById('lightboxImg').src = thumb.src;
+        lb.classList.add('open');
+      }
+    });
+    document.getElementById('lightbox').addEventListener('click', (e) => {
+      e.currentTarget.classList.remove('open');
+    });
+
+    // Drag-and-drop JSON/CSV import
+    const dragLabel = () => document.body.setAttribute('data-drag-label', t('dropToImport'));
+    let dragCounter = 0;
+    window.addEventListener('dragenter', (e) => {
+      if (!e.dataTransfer?.types.includes('Files')) return;
+      dragCounter++;
+      dragLabel();
+      document.body.classList.add('drag-over');
+    });
+    window.addEventListener('dragleave', () => {
+      dragCounter--;
+      if (dragCounter <= 0) { dragCounter = 0; document.body.classList.remove('drag-over'); }
+    });
+    window.addEventListener('dragover', (e) => { e.preventDefault(); });
+    window.addEventListener('drop', async (e) => {
+      e.preventDefault();
+      dragCounter = 0;
+      document.body.classList.remove('drag-over');
+      const file = e.dataTransfer?.files?.[0];
+      if (!file) return;
+      await handleImportFile(file);
+    });
+
+    // Shared import pipeline (JSON or CSV by extension)
+    async function handleImportFile(file) {
+      const name = (file.name || '').toLowerCase();
+      const text = await file.text();
+      if (name.endsWith('.csv')) {
+        await importCsv(file.name, text);
+      } else {
+        let data;
+        try { data = JSON.parse(text); }
+        catch { showToast(t('importInvalid'), 5000); return; }
+        const err = validateImport(data);
+        if (err) { showToast(t('importInvalid') + ' (' + err + ')', 6000); return; }
+        if (!confirm('Replace all data?')) return;
+        await db.clear('vehicles');
+        await db.clear('maintenance');
+        await db.clear('fuel');
+        await db.clear('mods');
+        await db.clear('parts');
+        for (const v of data.vehicles) await db.add('vehicles', v);
+        for (const m of data.maintenance || []) await db.add('maintenance', m);
+        for (const f of data.fuel || []) await db.add('fuel', f);
+        for (const mod of data.mods || []) await db.add('mods', mod);
+        for (const p of data.parts || []) await db.add('parts', p);
+        await loadVehicles();
+        showToast(t('importSuccess'));
+      }
+    }
+
+    function parseCsv(text) {
+      const rows = [];
+      let field = '', row = [], inQuotes = false;
+      for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        if (inQuotes) {
+          if (ch === '"' && text[i + 1] === '"') { field += '"'; i++; }
+          else if (ch === '"') inQuotes = false;
+          else field += ch;
+        } else {
+          if (ch === '"') inQuotes = true;
+          else if (ch === ',') { row.push(field); field = ''; }
+          else if (ch === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
+          else if (ch === '\r') { /* skip */ }
+          else field += ch;
+        }
+      }
+      if (field || row.length) { row.push(field); rows.push(row); }
+      return rows.filter(r => r.length && !(r.length === 1 && !r[0]));
+    }
+
+    async function importCsv(filename, text) {
+      const lower = filename.toLowerCase();
+      const storeMatch = ['maintenance', 'fuel', 'mods', 'parts'].find(s => lower.includes(s));
+      if (!storeMatch) { showToast(t('csvUnknownStore'), 6000); return; }
+      const rows = parseCsv(text);
+      if (rows.length < 2) { showToast(t('importInvalid'), 5000); return; }
+      const [header, ...data] = rows;
+      const numericFields = new Set(['odometer', 'cost', 'gallons', 'octane', 'quantity', 'intervalMiles', 'intervalMonths', 'nextDueMiles', 'year', 'purchasePrice', 'mpgGoal', 'monthlyBudget', 'annualBudget', 'manualValue']);
+      const boolFields = new Set(['shop', 'fullTank', 'installed', 'reminderShown', 'reminderDismissed']);
+      if (!confirm(`Import ${data.length} ${storeMatch} entries? (appended, not replacing)`)) return;
+      let added = 0;
+      for (const row of data) {
+        const obj = {};
+        header.forEach((key, i) => {
+          let v = row[i] ?? '';
+          if (numericFields.has(key) && v !== '') v = +v;
+          else if (boolFields.has(key)) v = v === 'true';
+          obj[key] = v === '' ? null : v;
+        });
+        if (!obj.id) obj.id = crypto.randomUUID();
+        if (!obj.vehicleId && activeVehicleId) obj.vehicleId = activeVehicleId;
+        try { await db.add(storeMatch, obj); added++; } catch { /* duplicate id, skip */ }
+      }
+      showToast(`${t('importSuccess')} (${added})`);
+      if (storeMatch === 'maintenance') await loadMaintenance();
+      else if (storeMatch === 'fuel') await loadFuel();
+      else if (storeMatch === 'mods') await loadMods();
+      else if (storeMatch === 'parts') await loadParts();
+      await loadDashboard();
+    }
 
     // PWA install
     let deferredPrompt;
@@ -2196,6 +2400,44 @@ ${mods.map(m => `<tr><td>${esc(m.date)}</td><td>${esc(m.category)}</td><td>${esc
       } else {
         showToast(t('installHelpIos'), 5000);
       }
+    });
+
+    async function refreshCacheInfo() {
+      const el = document.getElementById('cacheInfo');
+      if (!el) return;
+      if (!('caches' in window)) { el.textContent = ''; return; }
+      try {
+        const names = await caches.keys();
+        let total = 0;
+        let bytes = 0;
+        for (const n of names) {
+          const c = await caches.open(n);
+          const keys = await c.keys();
+          total += keys.length;
+          for (const req of keys) {
+            const resp = await c.match(req);
+            if (resp) {
+              const b = await resp.clone().blob();
+              bytes += b.size;
+            }
+          }
+        }
+        const kb = (bytes / 1024).toFixed(1);
+        el.textContent = `${t('cacheStatus')}: ${total} ${t('cacheItems')} · ${t('cacheSize')}: ${kb} KB`;
+      } catch { el.textContent = ''; }
+    }
+
+    document.getElementById('reloadBtn').addEventListener('click', async () => {
+      showToast(t('reloadingCache'));
+      if ('serviceWorker' in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        for (const r of regs) await r.unregister();
+      }
+      if ('caches' in window) {
+        const names = await caches.keys();
+        for (const n of names) await caches.delete(n);
+      }
+      setTimeout(() => location.reload(), 500);
     });
 
     // Offline indicator
@@ -2375,6 +2617,7 @@ ${mods.map(m => `<tr><td>${esc(m.date)}</td><td>${esc(m.category)}</td><td>${esc
       loadMaintenance();
       loadParts();
       refreshInstallStatus();
+      refreshCacheInfo();
     }
 
     // Init
