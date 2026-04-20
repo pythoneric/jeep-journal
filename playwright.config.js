@@ -11,6 +11,12 @@ export default defineConfig({
     baseURL: 'http://localhost:8080',
     trace: 'on-first-retry',
   },
+  webServer: {
+    command: 'npx serve . -l 8080 --no-clipboard',
+    url: 'http://localhost:8080/jeep.html',
+    reuseExistingServer: true,
+    timeout: 60000,
+  },
   projects: [
     {
       name: 'chromium',
