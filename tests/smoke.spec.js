@@ -1,13 +1,25 @@
 import { test, expect } from '@playwright/test';
 import { openLoader, startFresh, loadDemoSUV, loadDemoTruck } from './helpers.js';
 
-test('loader overlay is visible on first load', async ({ page }) => {
+test('loader overlay shows drop zone + demo + start fresh on first load', async ({ page }) => {
   await openLoader(page);
   await expect(page.locator('#loader')).toBeVisible();
-  await expect(page.locator('#continueBtn')).toBeVisible();
+  // Saved-data banner hidden on a pristine device — there's nothing to continue to
+  await expect(page.locator('#savedDataBanner')).toBeHidden();
+  await expect(page.locator('#loaderDropZone')).toBeVisible();
   await expect(page.locator('#demoSUVBtn')).toBeVisible();
   await expect(page.locator('#demoTruckBtn')).toBeVisible();
   await expect(page.locator('#startFreshBtn')).toBeVisible();
+});
+
+test('Continue button + saved-data banner appear after first use', async ({ page }) => {
+  await startFresh(page);
+  await page.click('#refreshBtn');
+  await expect(page.locator('#loader')).toBeVisible();
+  await expect(page.locator('#savedDataBanner')).toBeVisible();
+  await expect(page.locator('#continueBtn')).toBeVisible();
+  await expect(page.locator('#exportLoaderBtn')).toBeVisible();
+  await expect(page.locator('#deleteLoaderBtn')).toBeVisible();
 });
 
 test('Start Fresh dismisses loader and reveals app', async ({ page }) => {
@@ -32,7 +44,6 @@ test('refresh button brings the loader back', async ({ page }) => {
   await expect(page.locator('#loader')).toBeHidden();
   await page.click('#refreshBtn');
   await expect(page.locator('#loader')).toBeVisible();
-  await expect(page.locator('#continueBtn')).toBeVisible();
 });
 
 test('language toggle flips UI text', async ({ page }) => {

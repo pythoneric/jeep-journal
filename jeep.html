@@ -56,17 +56,55 @@
     .hidden { display: none; }
     .chart { max-height: 300px; }
     @media (max-width: 768px) { .g2, .g3, .g4 { grid-template-columns: 1fr; } .controls { gap: 0.5rem; justify-content: flex-end; } }
-    .loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); color: var(--text); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; padding: 1rem; }
-    .loader-card { max-width: 480px; background: rgba(20, 26, 35, 0.96); border: 1px solid var(--border); border-radius: 1rem; padding: 2rem; text-align: center; }
+    .loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); color: var(--text); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; padding: 1rem; overflow-y: auto; }
+    .loader-card { max-width: 520px; width: 100%; background: rgba(20, 26, 35, 0.96); border: 1px solid var(--border); border-radius: 1rem; padding: 1.75rem; text-align: center; }
     body.light .loader-card { background: rgba(255, 255, 255, 0.98); color: var(--light-text); border-color: var(--light-border); }
-    .loader-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.5rem; }
-    .loader-explanation { opacity: 0.8; margin-top: 0.5rem; font-size: 0.9rem; }
-    .loader-secondary { display: flex; gap: 1rem; margin-top: 1rem; justify-content: center; }
+    .loader-hero { display: flex; align-items: center; gap: 0.75rem; text-align: left; margin-bottom: 0.5rem; }
+    .loader-brand-icon { width: 2.5rem; height: 1.85rem; color: var(--accent); flex-shrink: 0; }
+    body.light .loader-brand-icon { color: var(--light-accent); }
+    .loader-hero-text { flex: 1; }
+    .loader-kicker { font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.7; font-weight: 700; }
+    .loader-hero h1 { margin: 0; font-size: 1.4rem; }
+    .loader-lang { margin-left: auto; }
+    .loader-tagline { opacity: 0.85; font-size: 0.95rem; margin: 0.75rem 0 1rem; }
+    .saved-banner { background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 0.75rem; padding: 0.85rem 1rem; text-align: left; margin-bottom: 0.75rem; }
+    .saved-banner-label { font-size: 0.8rem; font-weight: 700; color: #10b981; margin-bottom: 0.15rem; }
+    .saved-banner-info { font-size: 0.8rem; opacity: 0.75; margin-bottom: 0.65rem; }
+    .saved-banner-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: stretch; }
+    .saved-continue { flex: 1; min-width: 200px; }
+    .loader-divider { display: flex; align-items: center; gap: 0.75rem; margin: 0.9rem 0; font-size: 0.72rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 0.1em; }
+    .loader-divider::before, .loader-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    body.light .loader-divider::before, body.light .loader-divider::after { background: var(--light-border); }
+    .drop-zone { display: block; border: 2px dashed var(--border); border-radius: 0.85rem; padding: 1.1rem; cursor: pointer; transition: border-color 0.2s, background 0.2s; text-align: center; }
+    body.light .drop-zone { border-color: var(--light-border); }
+    .drop-zone:hover, .drop-zone.drag-over { border-color: var(--accent); background: rgba(217, 119, 6, 0.08); }
+    body.light .drop-zone:hover, body.light .drop-zone.drag-over { border-color: var(--light-accent); background: rgba(146, 64, 14, 0.08); }
+    .drop-zone-icon { font-size: 1.6rem; margin-bottom: 0.25rem; }
+    .drop-zone-text { font-weight: 700; font-size: 0.95rem; }
+    .drop-zone-sub { font-size: 0.78rem; opacity: 0.7; margin-top: 0.2rem; }
+    .loader-options { display: flex; flex-direction: column; gap: 0.6rem; }
+    .loader-demos { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+    button.btn-outline, body.light button.btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); padding: 0.75rem 0.5rem; border-radius: 0.5rem; cursor: pointer; font-size: 0.9rem; }
+    body.light button.btn-outline { border-color: var(--light-border); color: var(--light-text); }
+    button.btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+    body.light button.btn-outline:hover { border-color: var(--light-accent); color: var(--light-accent); }
+    .loader-fresh { border-style: dashed; }
+    button.btn-ghost, body.light button.btn-ghost { background: transparent; color: var(--text); border: 1px solid var(--border); padding: 0 0.65rem; border-radius: 0.4rem; cursor: pointer; min-width: 2.6rem; min-height: 2.6rem; font-size: 1.1rem; line-height: 1; display: inline-flex; align-items: center; justify-content: center; }
+    body.light button.btn-ghost { color: var(--light-text); border-color: var(--light-border); }
+    button.btn-ghost:hover { border-color: var(--accent); }
+    button.btn-danger-ghost, body.light button.btn-danger-ghost { color: #dc2626; border-color: rgba(220, 38, 38, 0.35); }
+    button.btn-danger-ghost:hover { background: rgba(220, 38, 38, 0.1); border-color: #dc2626; color: #dc2626; }
+    .btn-sm { background: var(--accent); color: white; border: none; padding: 0.35rem 0.75rem; font-size: 0.78rem; border-radius: 0.35rem; cursor: pointer; }
+    body.light .btn-sm { background: var(--light-accent); }
+    .loader-chip { background: transparent; border: 1px solid var(--border); color: var(--text); opacity: 0.75; }
+    body.light .loader-chip { color: var(--light-text); border-color: var(--light-border); }
+    .loader-chip:hover { border-color: var(--accent); color: var(--accent); opacity: 1; }
+    .loader-explanation { opacity: 0.7; margin-top: 0.25rem; font-size: 0.78rem; }
+    .loader-secondary { display: flex; gap: 0.75rem; margin-top: 0.85rem; justify-content: center; flex-wrap: wrap; }
     .interval-details { margin-top: 1rem; }
     .interval-fields { display: flex; gap: 1rem; margin-top: 0.5rem; }
     .reminder-item { color: #d97706; font-weight: bold; }
-    .loader-secondary .btn { width: auto; }
-    .loader-note { opacity: 0.8; margin-top: 1rem; }
+    .loader-note { opacity: 0.75; margin-top: 0.85rem; font-size: 0.78rem; }
     .loader-spinner { width: 40px; height: 40px; border: 4px solid var(--border); border-top: 4px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin: 1rem auto 0; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     .progress-bar { width: 100%; height: 10px; background: var(--border); border-radius: 5px; overflow: hidden; margin: 0.5rem 0; }
@@ -442,23 +480,70 @@
   </div>
   <div id="loader" class="loader">
     <div class="loader-card">
-      <h1 data-i18n="loaderTitle">BitEric Jeep</h1>
-      <p data-i18n="loaderDescription">Choose how to start. Your data never leaves this device.</p>
-      <p class="loader-explanation" data-i18n="loaderExplanation">Works offline · All processing local · Data saved in your browser</p>
-      <div class="loader-actions">
-        <button id="continueBtn" class="btn" data-i18n="continueBtn">Continue where you left off</button>
-        <button id="demoSUVBtn" class="btn" data-i18n="demoSUVBtn">Demo SUV</button>
-        <button id="demoTruckBtn" class="btn" data-i18n="demoTruckBtn">Demo Truck</button>
-        <button id="startFreshBtn" class="btn" data-i18n="startFreshBtn">Start Fresh</button>
-        <button id="importLoaderBtn" class="btn" data-i18n="importData">Import Data</button>
-        <input type="file" id="importLoaderFile" accept=".json" style="display: none;">
+      <div class="loader-hero">
+        <svg class="loader-brand-icon" viewBox="0 0 64 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" fill="currentColor">
+          <rect x="14" y="6" width="36" height="6" rx="2"/>
+          <rect x="4" y="12" width="56" height="24" rx="3" fill="none" stroke="currentColor" stroke-width="2.5"/>
+          <circle cx="12" cy="22" r="3"/>
+          <circle cx="52" cy="22" r="3"/>
+          <rect x="22" y="16" width="1.8" height="12"/>
+          <rect x="25" y="16" width="1.8" height="12"/>
+          <rect x="28" y="16" width="1.8" height="12"/>
+          <rect x="31" y="16" width="1.8" height="12"/>
+          <rect x="34" y="16" width="1.8" height="12"/>
+          <rect x="37" y="16" width="1.8" height="12"/>
+          <rect x="40" y="16" width="1.8" height="12"/>
+          <circle cx="14" cy="40" r="4.5"/>
+          <circle cx="50" cy="40" r="4.5"/>
+        </svg>
+        <div class="loader-hero-text">
+          <div class="loader-kicker">BitEric</div>
+          <h1 data-i18n="loaderTitle">BitEric Jeep</h1>
+        </div>
+        <button id="langToggleLoader" class="btn-sm loader-lang" data-i18n="langToggle">EN</button>
       </div>
-      <div class="loader-secondary">
-        <button id="langToggleLoader" class="btn" data-i18n="langToggle">EN</button>
-        <button id="clearCacheLoaderBtn" class="btn" data-i18n="reloadCache">Clear Cache</button>
-        <button id="resetBtn" class="btn" data-i18n="resetData">Reset Data</button>
+
+      <p class="loader-tagline" data-i18n="loaderDescription">Choose how to start. Your data never leaves this device.</p>
+
+      <!-- Saved-data banner: shown only when IndexedDB has real data -->
+      <div id="savedDataBanner" class="saved-banner hidden">
+        <div class="saved-banner-label" data-i18n="loaderSaved">✅ Saved data</div>
+        <div class="saved-banner-info" id="savedDataInfo">—</div>
+        <div class="saved-banner-actions">
+          <button id="continueBtn" class="btn saved-continue" data-i18n="continueBtn">▶ Continue where you left off</button>
+          <button id="exportLoaderBtn" class="btn btn-ghost" title="Export JSON backup" aria-label="Export backup" data-i18n="loaderExportTitle">💾</button>
+          <button id="deleteLoaderBtn" class="btn btn-ghost btn-danger-ghost" title="Delete saved data" aria-label="Delete saved data" data-i18n="loaderDeleteTitle">🗑</button>
+        </div>
       </div>
+
+      <div class="loader-divider"><span data-i18n="loaderOrOther">or start another way</span></div>
+
+      <!-- Prominent import drop zone -->
+      <label class="drop-zone" id="loaderDropZone" for="importLoaderFile">
+        <div class="drop-zone-icon">📂</div>
+        <div class="drop-zone-text" data-i18n="loaderImport">Import .json or .csv</div>
+        <div class="drop-zone-sub" data-i18n="loaderImportSub">Drag or tap · exported backup</div>
+      </label>
+      <input type="file" id="importLoaderFile" accept=".json,.csv" style="display: none;">
+
+      <div class="loader-divider"><span data-i18n="loaderOr">or</span></div>
+
+      <div class="loader-options">
+        <button id="startFreshBtn" class="btn btn-outline loader-fresh" data-i18n="startFreshBtn">✨ Start Fresh</button>
+        <div class="loader-demos">
+          <button id="demoSUVBtn" class="btn btn-outline" data-i18n="demoSUVBtn">🚙 Demo SUV</button>
+          <button id="demoTruckBtn" class="btn btn-outline" data-i18n="demoTruckBtn">🛻 Demo Truck</button>
+        </div>
+      </div>
+
       <p class="loader-note" data-i18n="loaderNote">Demo content is sample-only and safe to explore.</p>
+      <p class="loader-explanation" data-i18n="loaderExplanation">Works offline · All processing local · Data saved in your browser</p>
+
+      <div class="loader-secondary">
+        <button id="clearCacheLoaderBtn" class="btn-sm loader-chip" data-i18n="reloadCache">🔄 Clear cache</button>
+        <button id="resetBtn" class="btn-sm loader-chip" data-i18n="resetData">Reset Data</button>
+      </div>
+
       <div id="loaderSpinner" class="loader-spinner hidden"></div>
     </div>
   </div>
@@ -655,7 +740,22 @@
         closeBtn: "Close",
         dropToImport: "Drop JSON or CSV file to import",
         importSuccess: "Imported successfully.",
-        csvUnknownStore: "Unknown CSV type (expected filename containing maintenance/fuel/mods/parts)"
+        csvUnknownStore: "Unknown CSV type (expected filename containing maintenance/fuel/mods/parts)",
+        loaderSaved: "✅ Saved data",
+        loaderImport: "Import .json or .csv",
+        loaderImportSub: "Drag or tap · exported backup",
+        loaderOrOther: "or start another way",
+        loaderOr: "or",
+        loaderExportTitle: "💾",
+        loaderDeleteTitle: "🗑",
+        savedInfoVehicle: "vehicle",
+        savedInfoVehicles: "vehicles",
+        savedInfoMaint: "maintenance",
+        savedInfoFuel: "fuel",
+        savedInfoMods: "mods",
+        savedInfoParts: "parts",
+        confirmDeleteSaved: "Delete all saved data? This cannot be undone.",
+        exportedBackup: "Backup downloaded."
       },
       es: {
         appTitle: "BitEric Jeep",
@@ -845,7 +945,22 @@
         closeBtn: "Cerrar",
         dropToImport: "Suelta un archivo JSON o CSV para importar",
         importSuccess: "Importado con éxito.",
-        csvUnknownStore: "Tipo CSV desconocido (se espera archivo con maintenance/fuel/mods/parts)"
+        csvUnknownStore: "Tipo CSV desconocido (se espera archivo con maintenance/fuel/mods/parts)",
+        loaderSaved: "✅ Datos guardados",
+        loaderImport: "Importar .json o .csv",
+        loaderImportSub: "Arrastra o toca · respaldo exportado",
+        loaderOrOther: "o empieza de otra forma",
+        loaderOr: "o",
+        loaderExportTitle: "💾",
+        loaderDeleteTitle: "🗑",
+        savedInfoVehicle: "vehículo",
+        savedInfoVehicles: "vehículos",
+        savedInfoMaint: "mantenimiento",
+        savedInfoFuel: "combustible",
+        savedInfoMods: "mods",
+        savedInfoParts: "piezas",
+        confirmDeleteSaved: "¿Eliminar todos los datos guardados? No se puede deshacer.",
+        exportedBackup: "Respaldo descargado."
       }
     };
 
@@ -2204,29 +2319,84 @@ ${mods.map(m => `<tr><td>${esc(m.date)}</td><td>${esc(m.category)}</td><td>${esc
       document.getElementById('loader').style.display = 'none';
     });
 
-    document.getElementById('importLoaderBtn').addEventListener('click', () => {
-      document.getElementById('importLoaderFile').click();
+    async function checkSavedData() {
+      const banner = document.getElementById('savedDataBanner');
+      const info = document.getElementById('savedDataInfo');
+      if (!banner || !info) return;
+      const [vehicles, maintenance, fuel, mods, parts] = await Promise.all([
+        db.getAll('vehicles'), db.getAll('maintenance'), db.getAll('fuel'),
+        db.getAll('mods'), db.getAll('parts')
+      ]);
+      const entryCount = maintenance.length + fuel.length + mods.length + parts.length;
+      // Show banner only if there's meaningful history: real user entries, a
+      // custom-added vehicle beyond the two seeds, or a prior session recorded
+      // in localStorage.
+      const hasHistory = !!localStorage.getItem('activeVehicleId') || entryCount > 0 || vehicles.length > 2;
+      if (!hasHistory) {
+        banner.classList.add('hidden');
+        return;
+      }
+      const bits = [];
+      bits.push(`${vehicles.length} ${t(vehicles.length === 1 ? 'savedInfoVehicle' : 'savedInfoVehicles')}`);
+      if (maintenance.length) bits.push(`${maintenance.length} ${t('savedInfoMaint')}`);
+      if (fuel.length) bits.push(`${fuel.length} ${t('savedInfoFuel')}`);
+      if (mods.length) bits.push(`${mods.length} ${t('savedInfoMods')}`);
+      if (parts.length) bits.push(`${parts.length} ${t('savedInfoParts')}`);
+      info.textContent = bits.join(' · ');
+      banner.classList.remove('hidden');
+    }
+
+    async function exportAllAsJsonBlob() {
+      const data = {
+        vehicles: await db.getAll('vehicles'),
+        maintenance: await db.getAll('maintenance'),
+        fuel: await db.getAll('fuel'),
+        mods: await db.getAll('mods'),
+        parts: await db.getAll('parts')
+      };
+      const vehicle = data.vehicles.find(v => v.id === activeVehicleId) || data.vehicles[0];
+      const slug = (vehicle?.nickname || 'all').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'all';
+      const today = new Date().toISOString().split('T')[0];
+      return { blob: new Blob([JSON.stringify(data)], { type: 'application/json' }), name: `biteric-jeep-${slug}-${today}.json` };
+    }
+
+    document.getElementById('exportLoaderBtn').addEventListener('click', async () => {
+      const { blob, name } = await exportAllAsJsonBlob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = name; a.click();
+      URL.revokeObjectURL(url);
+      showToast(t('exportedBackup'));
     });
 
-    document.getElementById('importLoaderFile').addEventListener('change', async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      let data;
-      try { data = JSON.parse(await file.text()); }
-      catch { showToast(t('importInvalid'), 5000); return; }
-      const err = validateImport(data);
-      if (err) { showToast(t('importInvalid') + ' (' + err + ')', 6000); return; }
+    document.getElementById('deleteLoaderBtn').addEventListener('click', async () => {
+      if (!confirm(t('confirmDeleteSaved'))) return;
       await db.clear('vehicles');
       await db.clear('maintenance');
       await db.clear('fuel');
       await db.clear('mods');
       await db.clear('parts');
-      for (const v of data.vehicles) await db.add('vehicles', v);
-      for (const m of data.maintenance || []) await db.add('maintenance', m);
-      for (const f of data.fuel || []) await db.add('fuel', f);
-      for (const mod of data.mods || []) await db.add('mods', mod);
-      for (const p of data.parts || []) await db.add('parts', p);
+      localStorage.removeItem('activeVehicleId');
+      await checkSavedData();
+    });
+
+    // Drop-zone hover highlight (global drag overlay still handles drop)
+    const dropZone = document.getElementById('loaderDropZone');
+    if (dropZone) {
+      ['dragenter', 'dragover'].forEach(evt => dropZone.addEventListener(evt, (e) => {
+        e.preventDefault();
+        dropZone.classList.add('drag-over');
+      }));
+      ['dragleave', 'drop'].forEach(evt => dropZone.addEventListener(evt, () => dropZone.classList.remove('drag-over')));
+    }
+
+    document.getElementById('importLoaderFile').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
       showLoaderSpinner(true);
+      await handleImportFile(file);
+      // handleImportFile may reload dashboards but the loader overlay is still
+      // showing the first time; transition into the app now.
       await loadApp();
       document.getElementById('loader').style.display = 'none';
     });
@@ -2652,6 +2822,7 @@ ${mods.map(m => `<tr><td>${esc(m.date)}</td><td>${esc(m.category)}</td><td>${esc
       setLang(lang);
       setTheme(theme);
       await seedData();
+      await checkSavedData();
     })();
   </script>
 </body>
