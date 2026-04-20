@@ -78,6 +78,9 @@
     .drivetrain-details, .measurements-details, .followup-details { margin-top: 0.5rem; }
     .drivetrain-details > *, .followup-details > * { margin-top: 0.5rem; }
     .drivetrain-details > summary, .measurements-details > summary, .followup-details > summary { cursor: pointer; padding: 0.25rem 0; }
+    .lang-btn { display: inline-flex; align-items: center; gap: 0.35rem; }
+    .flag-icon { display: inline-flex; width: 1.2rem; height: 0.85rem; border-radius: 2px; overflow: hidden; box-shadow: 0 0 0 1px rgba(0,0,0,0.3); flex-shrink: 0; }
+    .flag-icon svg { display: block; width: 100%; height: 100%; }
     .severe-service-label { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; }
     .severe-service-badge { display: inline-block; background: #dc2626; color: white; font-size: 0.65rem; font-weight: 700; padding: 0.1rem 0.4rem; border-radius: 0.25rem; margin-left: 0.5rem; letter-spacing: 0.05em; text-transform: uppercase; vertical-align: middle; }
     .trail-conditions { border: 1px solid var(--border); border-radius: 0.4rem; padding: 0.5rem; display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.4rem; }
@@ -232,7 +235,7 @@
     </div>
     <div class="controls">
       <select id="vehicleSelect"></select>
-      <button id="langToggle" data-i18n="langToggle">EN</button>
+      <button id="langToggle" class="lang-btn"><span class="flag-icon" id="langFlag"></span><span data-i18n="langToggle">EN</span></button>
       <button id="themeToggle" data-i18n="themeToggle">🌙</button>
       <button id="refreshBtn" data-i18n="refreshBtn">🔄</button>
       <span class="offline-badge" data-i18n="offline">Offline</span>
@@ -341,7 +344,7 @@
         </div>
         <form id="maintenanceForm">
           <input type="date" id="mDate" required>
-          <input type="number" id="mOdometer" placeholder="Odometer (mi)" required>
+          <input type="number" id="mOdometer" data-i18n-placeholder="phOdometerMi" placeholder="Odometer (mi)" required>
           <select id="mType">
             <optgroup data-i18n-label="typeGroupFluids" label="Fluids">
               <option value="Oil change" data-i18n="oilChange">Oil change</option>
@@ -384,15 +387,15 @@
               <option value="Other" data-i18n="other">Other</option>
             </optgroup>
           </select>
-          <input type="text" id="mOtherType" class="hidden" placeholder="Specify if Other">
+          <input type="text" id="mOtherType" class="hidden" data-i18n-placeholder="phOtherType" placeholder="Specify if Other">
           <label><input type="checkbox" id="mShop"> <span data-i18n="shop">Shop</span> (<span data-i18n="diy">DIY</span>)</label>
-          <input type="number" step="0.01" id="mCost" placeholder="Cost (USD)">
-          <textarea id="mNotes" placeholder="Notes"></textarea>
+          <input type="number" step="0.01" id="mCost" data-i18n-placeholder="phCostUsd" placeholder="Cost (USD)">
+          <textarea id="mNotes" data-i18n-placeholder="phNotes" placeholder="Notes"></textarea>
           <details class="interval-details">
             <summary data-i18n="setReminder">Set Service Reminder</summary>
             <div class="interval-fields">
-              <input type="number" id="mIntervalMiles" placeholder="Interval (miles)">
-              <input type="number" id="mIntervalMonths" placeholder="Interval (months)">
+              <input type="number" id="mIntervalMiles" data-i18n-placeholder="phIntervalMiles" placeholder="Interval (miles)">
+              <input type="number" id="mIntervalMonths" data-i18n-placeholder="phIntervalMonths" placeholder="Interval (months)">
             </div>
           </details>
           <details class="measurements-details">
@@ -432,12 +435,12 @@
         <form id="fuelForm">
           <input type="date" id="fDate" required>
           <input type="number" id="fOdometer" placeholder="Odometer (mi)" required>
-          <input type="number" step="0.01" id="fGallons" placeholder="Gallons" required>
+          <input type="number" step="0.01" id="fGallons" data-i18n-placeholder="phGallons" placeholder="Gallons" required>
           <input type="number" step="0.001" id="fPrice" data-i18n-placeholder="pricePerGallon" placeholder="$ / gallon">
-          <input type="number" step="0.01" id="fCost" placeholder="Total Cost (USD)">
-          <input type="text" id="fStation" placeholder="Station">
+          <input type="number" step="0.01" id="fCost" data-i18n-placeholder="phTotalCostUsd" placeholder="Total Cost (USD)">
+          <input type="text" id="fStation" data-i18n-placeholder="phStation" placeholder="Station">
           <label><input type="checkbox" id="fFullTank" checked> <span data-i18n="fullTank">Full Tank</span></label>
-          <input type="number" id="fOctane" placeholder="Octane">
+          <input type="number" id="fOctane" data-i18n-placeholder="phOctane" placeholder="Octane">
           <select id="fFuelType">
             <option value="" data-i18n="fuelTypePlaceholder">Fuel type…</option>
             <option value="Regular" data-i18n="fuelRegular">Regular (87)</option>
@@ -496,11 +499,11 @@
             <option value="Drivetrain" data-i18n="drivetrain">Drivetrain</option>
             <option value="Other" data-i18n="other">Other</option>
           </select>
-          <input type="text" id="modPart" placeholder="Part Name" required>
-          <input type="text" id="modBrand" placeholder="Brand">
-          <input type="number" step="0.01" id="modCost" placeholder="Cost (USD)">
+          <input type="text" id="modPart" data-i18n-placeholder="phPartName" placeholder="Part Name" required>
+          <input type="text" id="modBrand" data-i18n-placeholder="phPartBrand" placeholder="Brand">
+          <input type="number" step="0.01" id="modCost" data-i18n-placeholder="phCostUsd" placeholder="Cost (USD)">
           <label><input type="checkbox" id="modShop"> <span data-i18n="shop">Shop</span> (<span data-i18n="diy">DIY</span>)</label>
-          <textarea id="modNotes" placeholder="Notes"></textarea>
+          <textarea id="modNotes" data-i18n-placeholder="phNotes" placeholder="Notes"></textarea>
           <label><input type="checkbox" id="modInstalled" checked> <span data-i18n="stillInstalled">Still Installed</span></label>
           <input type="date" id="modRemovedDate" class="hidden" data-i18n-placeholder="removedOn" placeholder="Removed on">
           <details class="followup-details">
@@ -545,9 +548,9 @@
       <div class="card">
         <h2 data-i18n="partsInventory">Parts Inventory</h2>
         <form id="partsForm">
-          <input type="text" id="partName" placeholder="Part Name" required>
-          <input type="number" id="partQuantity" placeholder="Quantity" min="1" value="1">
-          <input type="text" id="partLocation" placeholder="Location (e.g., Garage shelf)">
+          <input type="text" id="partName" data-i18n-placeholder="phPartName" placeholder="Part Name" required>
+          <input type="number" id="partQuantity" data-i18n-placeholder="phQuantity" placeholder="Quantity" min="1" value="1">
+          <input type="text" id="partLocation" data-i18n-placeholder="phPartLocation" placeholder="Location (e.g., Garage shelf)">
           <button type="submit" class="btn" data-i18n="addPart">Add Part</button>
         </form>
         <input type="search" id="partsSearch" class="search-input" data-i18n-placeholder="searchPlaceholder" placeholder="Search…">
@@ -559,16 +562,16 @@
         <h2 data-i18n="settings">Settings</h2>
         <h3 data-i18n="addVehicle">Add Vehicle</h3>
         <form id="vehicleForm">
-          <input type="text" id="vNickname" placeholder="Nickname" required>
-          <input type="text" id="vMake" placeholder="Make" required>
-          <input type="text" id="vModel" placeholder="Model" required>
-          <input type="number" id="vYear" placeholder="Year" required>
-          <input type="text" id="vTrim" placeholder="Trim">
-          <input type="text" id="vColor" placeholder="Color">
-          <input type="text" id="vVin" placeholder="VIN">
-          <input type="text" id="vPlate" placeholder="License Plate">
-          <input type="date" id="vPurchaseDate" placeholder="Purchase Date">
-          <input type="number" id="vOdometer" placeholder="Current Odometer (mi)">
+          <input type="text" id="vNickname" data-i18n-placeholder="nickname" placeholder="Nickname" required>
+          <input type="text" id="vMake" data-i18n-placeholder="make" placeholder="Make" required>
+          <input type="text" id="vModel" data-i18n-placeholder="model" placeholder="Model" required>
+          <input type="number" id="vYear" data-i18n-placeholder="year" placeholder="Year" required>
+          <input type="text" id="vTrim" data-i18n-placeholder="trim" placeholder="Trim">
+          <input type="text" id="vColor" data-i18n-placeholder="color" placeholder="Color">
+          <input type="text" id="vVin" data-i18n-placeholder="vin" placeholder="VIN">
+          <input type="text" id="vPlate" data-i18n-placeholder="plate" placeholder="License Plate">
+          <input type="date" id="vPurchaseDate" data-i18n-placeholder="purchaseDate" placeholder="Purchase Date">
+          <input type="number" id="vOdometer" data-i18n-placeholder="odometer" placeholder="Current Odometer (mi)">
           <input type="number" step="0.01" id="vPurchasePrice" data-i18n-placeholder="purchasePrice" placeholder="Purchase price (USD)">
           <input type="number" step="0.1" id="vMpgGoal" data-i18n-placeholder="mpgGoal" placeholder="MPG goal">
           <input type="number" step="0.01" id="vMonthlyBudget" data-i18n-placeholder="monthlyBudget" placeholder="Monthly budget (USD)">
@@ -686,7 +689,7 @@
           <div class="loader-kicker">BitEric</div>
           <h1 data-i18n="loaderTitle">BitEric Jeep</h1>
         </div>
-        <button id="langToggleLoader" class="btn-sm loader-lang" data-i18n="langToggle">EN</button>
+        <button id="langToggleLoader" class="btn-sm loader-lang lang-btn"><span class="flag-icon" id="langFlagLoader"></span><span data-i18n="langToggle">EN</span></button>
       </div>
 
       <p class="loader-tagline" data-i18n="loaderDescription">Choose how to start. Your data never leaves this device.</p>
@@ -1022,6 +1025,20 @@
         trailsAutoTireReminder: "Auto-scheduled: wheel re-torque + lug nut check",
         maintPerMile: "Maintenance $/mi",
         fuelPerMile: "Fuel $/mi",
+        phOdometerMi: "Odometer (mi)",
+        phOtherType: "Specify if Other",
+        phCostUsd: "Cost (USD)",
+        phNotes: "Notes",
+        phIntervalMiles: "Interval (miles)",
+        phIntervalMonths: "Interval (months)",
+        phGallons: "Gallons",
+        phTotalCostUsd: "Total Cost (USD)",
+        phStation: "Station",
+        phOctane: "Octane",
+        phPartName: "Part Name",
+        phPartBrand: "Brand",
+        phQuantity: "Quantity",
+        phPartLocation: "Location (e.g., Garage shelf)",
         savedInfoVehicle: "vehicle",
         savedInfoVehicles: "vehicles",
         savedInfoMaint: "maintenance",
@@ -1315,6 +1332,22 @@
         trailsAutoTireReminder: "Agendado: re-torque de ruedas + tuercas",
         maintPerMile: "Mantenimiento $/mi",
         fuelPerMile: "Combustible $/mi",
+        partsInventory: "Inventario de piezas",
+        addPart: "Agregar pieza",
+        phOdometerMi: "Odómetro (mi)",
+        phOtherType: "Especificar si es Otro",
+        phCostUsd: "Costo (USD)",
+        phNotes: "Notas",
+        phIntervalMiles: "Intervalo (millas)",
+        phIntervalMonths: "Intervalo (meses)",
+        phGallons: "Galones",
+        phTotalCostUsd: "Costo total (USD)",
+        phStation: "Estación",
+        phOctane: "Octanaje",
+        phPartName: "Nombre de pieza",
+        phPartBrand: "Marca",
+        phQuantity: "Cantidad",
+        phPartLocation: "Ubicación (ej. estante del garaje)",
         savedInfoVehicle: "vehículo",
         savedInfoVehicles: "vehículos",
         savedInfoMaint: "mantenimiento",
@@ -1426,6 +1459,9 @@
     }
 
     // UI functions
+    const FLAG_US = '<svg viewBox="0 0 19 10" xmlns="http://www.w3.org/2000/svg"><rect width="19" height="10" fill="#fff"/><g fill="#b22234"><rect y="0" width="19" height="0.77"/><rect y="1.54" width="19" height="0.77"/><rect y="3.08" width="19" height="0.77"/><rect y="4.62" width="19" height="0.77"/><rect y="6.15" width="19" height="0.77"/><rect y="7.69" width="19" height="0.77"/><rect y="9.23" width="19" height="0.77"/></g><rect width="7.6" height="5.38" fill="#3c3b6e"/></svg>';
+    const FLAG_DO = '<svg viewBox="0 0 15 10" xmlns="http://www.w3.org/2000/svg"><rect width="7.5" height="5" x="0" y="0" fill="#002d62"/><rect width="7.5" height="5" x="7.5" y="5" fill="#002d62"/><rect width="7.5" height="5" x="7.5" y="0" fill="#ce1126"/><rect width="7.5" height="5" x="0" y="5" fill="#ce1126"/><rect width="15" height="1" x="0" y="4.5" fill="#fff"/><rect width="1" height="10" x="7" y="0" fill="#fff"/></svg>';
+
     function setLang(newLang) {
       lang = newLang;
       localStorage.setItem('lang', lang);
@@ -1437,6 +1473,12 @@
         const key = el.dataset.i18nPlaceholder;
         el.placeholder = I18N[lang][key] || key;
       });
+      // Flag icon: show the CURRENT language's flag (same convention as the text label)
+      const flag = lang === 'en' ? FLAG_US : FLAG_DO;
+      const header = document.getElementById('langFlag');
+      const loader = document.getElementById('langFlagLoader');
+      if (header) header.innerHTML = flag;
+      if (loader) loader.innerHTML = flag;
       document.documentElement.lang = lang;
     }
 
