@@ -456,8 +456,7 @@
         </form>
         <button id="deleteVehicleBtn" class="btn btn-danger" data-i18n="deleteVehicle">Delete active vehicle</button>
         <button id="exportBtn" class="btn" data-i18n="exportData">Export Data</button>
-        <button id="exportCsvBtn" class="btn" data-i18n="exportCsv">Export CSV</button>
-        <input type="file" id="importFile" accept=".json,.csv">
+        <input type="file" id="importFile" accept=".json">
         <button id="importBtn" class="btn" data-i18n="importData">Import Data</button>
         <div id="cacheInfo"></div>
         <button id="reloadBtn" class="btn" data-i18n="reloadCache">Reload Cache</button>
@@ -521,10 +520,10 @@
       <!-- Prominent import drop zone -->
       <label class="drop-zone" id="loaderDropZone" for="importLoaderFile">
         <div class="drop-zone-icon">📂</div>
-        <div class="drop-zone-text" data-i18n="loaderImport">Import .json or .csv</div>
+        <div class="drop-zone-text" data-i18n="loaderImport">Import .json</div>
         <div class="drop-zone-sub" data-i18n="loaderImportSub">Drag or tap · exported backup</div>
       </label>
-      <input type="file" id="importLoaderFile" accept=".json,.csv" style="display: none;">
+      <input type="file" id="importLoaderFile" accept=".json" style="display: none;">
 
       <div class="loader-divider"><span data-i18n="loaderOr">or</span></div>
 
@@ -708,7 +707,6 @@
         tcoFuel: "Fuel",
         tcoMods: "Mods",
         tcoTotal: "Total",
-        exportCsv: "Export CSV",
         maintPhoto: "Receipt (optional)",
         noModsMatch: "No mods match your search.",
         noPartsMatch: "No parts match your search.",
@@ -738,11 +736,10 @@
         shortcutEscape: "Esc — Cancel edit",
         shortcutHelp: "? — Show this help",
         closeBtn: "Close",
-        dropToImport: "Drop JSON or CSV file to import",
+        dropToImport: "Drop JSON file to import",
         importSuccess: "Imported successfully.",
-        csvUnknownStore: "Unknown CSV type (expected filename containing maintenance/fuel/mods/parts)",
         loaderSaved: "✅ Saved data",
-        loaderImport: "Import .json or .csv",
+        loaderImport: "Import .json",
         loaderImportSub: "Drag or tap · exported backup",
         loaderOrOther: "or start another way",
         loaderOr: "or",
@@ -913,7 +910,6 @@
         tcoFuel: "Combustible",
         tcoMods: "Mods",
         tcoTotal: "Total",
-        exportCsv: "Exportar CSV",
         maintPhoto: "Recibo (opcional)",
         noModsMatch: "Sin mods que coincidan.",
         noPartsMatch: "Sin piezas que coincidan.",
@@ -943,11 +939,10 @@
         shortcutEscape: "Esc — Cancelar edición",
         shortcutHelp: "? — Mostrar esta ayuda",
         closeBtn: "Cerrar",
-        dropToImport: "Suelta un archivo JSON o CSV para importar",
+        dropToImport: "Suelta un archivo JSON para importar",
         importSuccess: "Importado con éxito.",
-        csvUnknownStore: "Tipo CSV desconocido (se espera archivo con maintenance/fuel/mods/parts)",
         loaderSaved: "✅ Datos guardados",
-        loaderImport: "Importar .json o .csv",
+        loaderImport: "Importar .json",
         loaderImportSub: "Arrastra o toca · respaldo exportado",
         loaderOrOther: "o empieza de otra forma",
         loaderOr: "o",
@@ -2173,40 +2168,6 @@ ${mods.map(m => `<tr><td>${esc(m.date)}</td><td>${esc(m.category)}</td><td>${esc
     });
 
     // Settings
-    function toCsv(rows) {
-      if (!rows.length) return '';
-      const cols = Object.keys(rows[0]);
-      const esc = (v) => {
-        if (v == null) return '';
-        const s = typeof v === 'object' ? JSON.stringify(v) : String(v);
-        return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-      };
-      return [cols.join(','), ...rows.map(r => cols.map(c => esc(r[c])).join(','))].join('\n');
-    }
-
-    document.getElementById('exportCsvBtn').addEventListener('click', async () => {
-      const vehicle = activeVehicleId ? (await db.getAll('vehicles')).find(v => v.id === activeVehicleId) : null;
-      const pick = (arr) => activeVehicleId ? arr.filter(x => x.vehicleId === activeVehicleId) : arr;
-      const datasets = {
-        maintenance: pick(await db.getAll('maintenance')).map(({ photo, ...rest }) => rest),
-        fuel: pick(await db.getAll('fuel')),
-        mods: pick(await db.getAll('mods')).map(({ photo, ...rest }) => rest),
-        parts: pick(await db.getAll('parts'))
-      };
-      const slug = (vehicle?.nickname || 'all').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'all';
-      const today = new Date().toISOString().split('T')[0];
-      for (const [name, rows] of Object.entries(datasets)) {
-        if (!rows.length) continue;
-        const blob = new Blob([toCsv(rows)], { type: 'text/csv' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `biteric-jeep-${slug}-${name}-${today}.csv`;
-        a.click();
-        URL.revokeObjectURL(url);
-      }
-    });
-
     document.getElementById('exportBtn').addEventListener('click', async () => {
       const data = {
         vehicles: await db.getAll('vehicles'),
@@ -2474,7 +2435,7 @@ ${mods.map(m => `<tr><td>${esc(m.date)}</td><td>${esc(m.category)}</td><td>${esc
       e.currentTarget.classList.remove('open');
     });
 
-    // Drag-and-drop JSON/CSV import
+    // Drag-and-drop JSON import
     const dragLabel = () => document.body.setAttribute('data-drag-label', t('dropToImport'));
     let dragCounter = 0;
     window.addEventListener('dragenter', (e) => {
@@ -2497,84 +2458,27 @@ ${mods.map(m => `<tr><td>${esc(m.date)}</td><td>${esc(m.category)}</td><td>${esc
       await handleImportFile(file);
     });
 
-    // Shared import pipeline (JSON or CSV by extension)
+    // Shared JSON import pipeline (drop-zone, Settings button, loader input)
     async function handleImportFile(file) {
-      const name = (file.name || '').toLowerCase();
       const text = await file.text();
-      if (name.endsWith('.csv')) {
-        await importCsv(file.name, text);
-      } else {
-        let data;
-        try { data = JSON.parse(text); }
-        catch { showToast(t('importInvalid'), 5000); return; }
-        const err = validateImport(data);
-        if (err) { showToast(t('importInvalid') + ' (' + err + ')', 6000); return; }
-        if (!confirm('Replace all data?')) return;
-        await db.clear('vehicles');
-        await db.clear('maintenance');
-        await db.clear('fuel');
-        await db.clear('mods');
-        await db.clear('parts');
-        for (const v of data.vehicles) await db.add('vehicles', v);
-        for (const m of data.maintenance || []) await db.add('maintenance', m);
-        for (const f of data.fuel || []) await db.add('fuel', f);
-        for (const mod of data.mods || []) await db.add('mods', mod);
-        for (const p of data.parts || []) await db.add('parts', p);
-        await loadVehicles();
-        showToast(t('importSuccess'));
-      }
-    }
-
-    function parseCsv(text) {
-      const rows = [];
-      let field = '', row = [], inQuotes = false;
-      for (let i = 0; i < text.length; i++) {
-        const ch = text[i];
-        if (inQuotes) {
-          if (ch === '"' && text[i + 1] === '"') { field += '"'; i++; }
-          else if (ch === '"') inQuotes = false;
-          else field += ch;
-        } else {
-          if (ch === '"') inQuotes = true;
-          else if (ch === ',') { row.push(field); field = ''; }
-          else if (ch === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
-          else if (ch === '\r') { /* skip */ }
-          else field += ch;
-        }
-      }
-      if (field || row.length) { row.push(field); rows.push(row); }
-      return rows.filter(r => r.length && !(r.length === 1 && !r[0]));
-    }
-
-    async function importCsv(filename, text) {
-      const lower = filename.toLowerCase();
-      const storeMatch = ['maintenance', 'fuel', 'mods', 'parts'].find(s => lower.includes(s));
-      if (!storeMatch) { showToast(t('csvUnknownStore'), 6000); return; }
-      const rows = parseCsv(text);
-      if (rows.length < 2) { showToast(t('importInvalid'), 5000); return; }
-      const [header, ...data] = rows;
-      const numericFields = new Set(['odometer', 'cost', 'gallons', 'octane', 'quantity', 'intervalMiles', 'intervalMonths', 'nextDueMiles', 'year', 'purchasePrice', 'mpgGoal', 'monthlyBudget', 'annualBudget', 'manualValue']);
-      const boolFields = new Set(['shop', 'fullTank', 'installed', 'reminderShown', 'reminderDismissed']);
-      if (!confirm(`Import ${data.length} ${storeMatch} entries? (appended, not replacing)`)) return;
-      let added = 0;
-      for (const row of data) {
-        const obj = {};
-        header.forEach((key, i) => {
-          let v = row[i] ?? '';
-          if (numericFields.has(key) && v !== '') v = +v;
-          else if (boolFields.has(key)) v = v === 'true';
-          obj[key] = v === '' ? null : v;
-        });
-        if (!obj.id) obj.id = crypto.randomUUID();
-        if (!obj.vehicleId && activeVehicleId) obj.vehicleId = activeVehicleId;
-        try { await db.add(storeMatch, obj); added++; } catch { /* duplicate id, skip */ }
-      }
-      showToast(`${t('importSuccess')} (${added})`);
-      if (storeMatch === 'maintenance') await loadMaintenance();
-      else if (storeMatch === 'fuel') await loadFuel();
-      else if (storeMatch === 'mods') await loadMods();
-      else if (storeMatch === 'parts') await loadParts();
-      await loadDashboard();
+      let data;
+      try { data = JSON.parse(text); }
+      catch { showToast(t('importInvalid'), 5000); return; }
+      const err = validateImport(data);
+      if (err) { showToast(t('importInvalid') + ' (' + err + ')', 6000); return; }
+      if (!confirm('Replace all data?')) return;
+      await db.clear('vehicles');
+      await db.clear('maintenance');
+      await db.clear('fuel');
+      await db.clear('mods');
+      await db.clear('parts');
+      for (const v of data.vehicles) await db.add('vehicles', v);
+      for (const m of data.maintenance || []) await db.add('maintenance', m);
+      for (const f of data.fuel || []) await db.add('fuel', f);
+      for (const mod of data.mods || []) await db.add('mods', mod);
+      for (const p of data.parts || []) await db.add('parts', p);
+      await loadVehicles();
+      showToast(t('importSuccess'));
     }
 
     // PWA install

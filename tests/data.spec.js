@@ -21,19 +21,6 @@ test('JSON export uses vehicle nickname + date in filename', async ({ page }) =>
   expect(name).toMatch(/^biteric-jeep-wrangler-demo-\d{4}-\d{2}-\d{2}\.json$/);
 });
 
-test('CSV export produces one file per store (skipping empty)', async ({ page }) => {
-  await loadDemoSUV(page);
-  await switchTab(page, 'settings');
-  const downloads = [];
-  page.on('download', (d) => downloads.push(d.suggestedFilename()));
-  await page.click('#exportCsvBtn');
-  await page.waitForTimeout(1500);
-  const names = downloads.join(',');
-  expect(names).toMatch(/maintenance.*\.csv/);
-  expect(names).toMatch(/fuel.*\.csv/);
-  expect(names).toMatch(/mods.*\.csv/);
-});
-
 test('invalid JSON import shows toast and does not wipe data', async ({ page }) => {
   await loadDemoSUV(page);
   const before = await page.locator('#vehicleSelect option').count();
@@ -64,24 +51,6 @@ test('valid JSON import replaces data after confirmation', async ({ page }) => {
   await page.waitForTimeout(500);
   await expect(page.locator('#vehicleSelect')).toContainText('Imported');
   fs.unlinkSync(good);
-});
-
-test('CSV import by filename routes into the correct store', async ({ page }) => {
-  await startFresh(page);
-  const csv = tmpWrite(
-    'biteric-jeep-parts-2026-04-20.csv',
-    'id,vehicleId,name,quantity,location\np1,,Oil filter,4,Garage\np2,,Brake pads,2,Cabinet\n',
-  );
-  page.on('dialog', (d) => d.accept());
-  await switchTab(page, 'settings');
-  await page.setInputFiles('#importFile', csv);
-  await page.click('#importBtn');
-  await page.waitForTimeout(500);
-  await switchTab(page, 'parts');
-  await expect(page.locator('#partsList li')).toHaveCount(2);
-  await expect(page.locator('#partsList')).toContainText('Oil filter');
-  await expect(page.locator('#partsList')).toContainText('Brake pads');
-  fs.unlinkSync(csv);
 });
 
 test('drag-and-drop JSON shows the drop overlay', async ({ page }) => {
