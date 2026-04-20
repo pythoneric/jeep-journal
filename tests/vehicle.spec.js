@@ -54,6 +54,33 @@ test('delete active vehicle cascades to maintenance/fuel/mods/parts', async ({ p
   await expect(page.locator('#maintenanceList .empty-state')).toBeVisible();
 });
 
+test('severe-service toggle halves template intervals', async ({ page }) => {
+  await startFresh(page);
+  await switchTab(page, 'settings');
+  await page.check('#eSevereService');
+  await page.click('#editVehicleForm button[type="submit"]');
+  await switchTab(page, 'maintenance');
+  await page.selectOption('#mTemplate', 'oil');
+  // Oil: 5000 mi / 6 mo normally → 2500 / 3 under severe service
+  await expect(page.locator('#mIntervalMiles')).toHaveValue('2500');
+  await expect(page.locator('#mIntervalMonths')).toHaveValue('3');
+});
+
+test('drivetrain specs show on the dashboard vehicle card', async ({ page }) => {
+  await loadDemoSUV(page);
+  await switchTab(page, 'dashboard');
+  const card = await page.textContent('#vehicleCard');
+  expect(card).toContain('3.6L Pentastar');
+  expect(card).toContain('4.10');
+  expect(card).toContain('35x12.50R17');
+});
+
+test('severe-service badge appears when toggled', async ({ page }) => {
+  await loadDemoSUV(page);
+  await switchTab(page, 'dashboard');
+  await expect(page.locator('#vehicleCard .severe-service-badge')).toBeVisible();
+});
+
 test('per-vehicle goals drive dashboard cards', async ({ page }) => {
   await startFresh(page);
   await switchTab(page, 'settings');

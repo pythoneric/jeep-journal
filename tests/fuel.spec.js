@@ -102,6 +102,21 @@ test('can delete a fuel entry and undo', async ({ page }) => {
   await expect(page.locator('#fuelList li')).toHaveCount(before);
 });
 
+test('fuel type + driving condition persist on entry', async ({ page }) => {
+  await startFresh(page);
+  await switchTab(page, 'fuel');
+  await page.fill('#fDate', '2024-01-01');
+  await page.fill('#fOdometer', '10000');
+  await page.fill('#fGallons', '10');
+  await page.fill('#fCost', '30');
+  await page.selectOption('#fFuelType', 'Premium');
+  await page.selectOption('#fDriving', 'Offroad');
+  await page.click('#fuelForm button[type="submit"]');
+  await page.locator('#fuelList .edit-btn').first().click();
+  await expect(page.locator('#fFuelType')).toHaveValue('Premium');
+  await expect(page.locator('#fDriving')).toHaveValue('Offroad');
+});
+
 test('can edit a fuel entry', async ({ page }) => {
   await loadDemoSUV(page);
   await switchTab(page, 'fuel');

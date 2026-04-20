@@ -13,18 +13,20 @@ test('Service Reminders card renders above the Vehicle card', async ({ page }) =
 test('Vehicle card shows color, plate, VIN last-4 and purchase date', async ({ page }) => {
   await loadDemoSUV(page);
   await switchTab(page, 'dashboard');
-  const meta = await page.locator('#vehicleCard .vehicle-meta').textContent();
+  // There can be multiple .vehicle-meta rows (identity + drivetrain specs); combine them.
+  const meta = (await page.locator('#vehicleCard .vehicle-meta').allTextContents()).join(' ');
   expect(meta).toContain('Orange'); // color
   expect(meta).toContain('DEMO1'); // plate
   expect(meta).toContain('G123'); // vin last-4
   expect(meta).toMatch(/2023-01-01/); // purchase date
 });
 
-test('TCO + $/mile cards render with demo data', async ({ page }) => {
+test('TCO + split $/mile cards render with demo data', async ({ page }) => {
   await loadDemoSUV(page);
   await switchTab(page, 'dashboard');
   await expect(page.locator('#tcoCard')).toContainText(/\$/);
-  await expect(page.locator('#cpmCard')).toContainText(/\$|mile|milla/);
+  await expect(page.locator('#cpmMaintCard')).toContainText(/\$|mile|milla/);
+  await expect(page.locator('#cpmFuelCard')).toContainText(/\$|mile|milla/);
 });
 
 test('Monthly trend chart canvas is present', async ({ page }) => {

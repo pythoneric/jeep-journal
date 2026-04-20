@@ -55,7 +55,39 @@
     body.light .btn { background: var(--light-accent); }
     .hidden { display: none !important; }
     .chart { max-height: 300px; }
-    @media (max-width: 768px) { .g2, .g3, .g4 { grid-template-columns: 1fr; } .controls { gap: 0.5rem; justify-content: flex-end; } }
+    @media (max-width: 768px) {
+      .g2, .g3, .g4 { grid-template-columns: 1fr; }
+      .controls { gap: 0.5rem; justify-content: flex-end; }
+      .content { padding: 0.75rem; }
+      .card { padding: 0.85rem; }
+      input, select, textarea, button { font-size: 16px; } /* prevent iOS zoom on focus */
+      .btn, button[type="submit"] { min-height: 44px; padding: 0.75rem 1rem; } /* touch target */
+      .del-btn, .edit-btn { min-width: 2.5rem; min-height: 2.5rem; font-size: 1rem; }
+      .reminder-btn { min-height: 32px; padding: 0.3rem 0.6rem; }
+      form { gap: 0.75rem; }
+      .tab { padding: 0.9rem 0.3rem; font-size: 0.8rem; }
+      .entry-list li { padding: 0.6rem 0; flex-wrap: wrap; }
+      .entry-list .entry-main { min-width: 100%; }
+      h1 { font-size: 1.35rem; }
+      h2 { font-size: 1.15rem; }
+      h3 { font-size: 1rem; }
+    }
+    .measurements-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-top: 0.5rem; }
+    .measurements-grid label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.8rem; }
+    .measurement-wide { grid-column: 1 / -1; }
+    .drivetrain-details, .measurements-details, .followup-details { margin-top: 0.5rem; }
+    .drivetrain-details > *, .followup-details > * { margin-top: 0.5rem; }
+    .drivetrain-details > summary, .measurements-details > summary, .followup-details > summary { cursor: pointer; padding: 0.25rem 0; }
+    .severe-service-label { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; }
+    .severe-service-badge { display: inline-block; background: #dc2626; color: white; font-size: 0.65rem; font-weight: 700; padding: 0.1rem 0.4rem; border-radius: 0.25rem; margin-left: 0.5rem; letter-spacing: 0.05em; text-transform: uppercase; vertical-align: middle; }
+    .trail-conditions { border: 1px solid var(--border); border-radius: 0.4rem; padding: 0.5rem; display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.4rem; }
+    body.light .trail-conditions { border-color: var(--light-border); }
+    .trail-conditions legend { padding: 0 0.5rem; font-size: 0.85rem; opacity: 0.85; }
+    .trail-conditions label { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; cursor: pointer; }
+    .trail-hint { opacity: 0.75; font-size: 0.8rem; margin: 0.25rem 0; }
+    .trail-condition-chip { display: inline-block; background: rgba(217, 119, 6, 0.15); color: var(--accent); padding: 0.1rem 0.4rem; border-radius: 0.25rem; font-size: 0.72rem; margin-right: 0.25rem; }
+    body.light .trail-condition-chip { background: rgba(146, 64, 14, 0.15); color: var(--light-accent); }
+    @media (max-width: 480px) { .measurements-grid, .trail-conditions { grid-template-columns: 1fr; } }
     .loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); color: var(--text); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; padding: 1rem; overflow-y: auto; }
     .loader-card { max-width: 520px; width: 100%; background: rgba(20, 26, 35, 0.96); border: 1px solid var(--border); border-radius: 1rem; padding: 1.75rem; text-align: center; }
     body.light .loader-card { background: rgba(255, 255, 255, 0.98); color: var(--light-text); border-color: var(--light-border); }
@@ -212,6 +244,7 @@
     <div class="tab" data-tab="maintenance" role="tab" tabindex="0" data-i18n="tabMaintenance">Maintenance</div>
     <div class="tab" data-tab="fuel" role="tab" tabindex="0" data-i18n="tabFuel">Fuel</div>
     <div class="tab" data-tab="mods" role="tab" tabindex="0" data-i18n="tabMods">Mods</div>
+    <div class="tab" data-tab="trails" role="tab" tabindex="0" data-i18n="tabTrails">Trails</div>
     <div class="tab" data-tab="parts" role="tab" tabindex="0" data-i18n="tabParts">Parts</div>
     <div class="tab" data-tab="settings" role="tab" tabindex="0" data-i18n="tabSettings">Settings</div>
   </nav>
@@ -259,14 +292,18 @@
           <canvas id="costChart" class="chart"></canvas>
         </div>
       </div>
+      <div class="card">
+        <h3 data-i18n="totalOwnershipCost">Total cost of ownership</h3>
+        <div id="tcoCard"></div>
+      </div>
       <div class="g2">
         <div class="card">
-          <h3 data-i18n="totalOwnershipCost">Total cost of ownership</h3>
-          <div id="tcoCard"></div>
+          <h3 data-i18n="maintPerMile">Maintenance $/mi</h3>
+          <div id="cpmMaintCard"></div>
         </div>
         <div class="card">
-          <h3 data-i18n="costPerMile">Cost per mile</h3>
-          <div id="cpmCard"></div>
+          <h3 data-i18n="fuelPerMile">Fuel $/mi</h3>
+          <div id="cpmFuelCard"></div>
         </div>
       </div>
       <div class="card">
@@ -281,38 +318,71 @@
           <label data-i18n="quickTemplates">Quick templates</label>
           <select id="mTemplate">
             <option value="" data-i18n="selectTemplate">Select a service…</option>
-            <option value="oil" data-i18n="templateOil">Oil change (5k mi / 6 mo)</option>
-            <option value="tireRotation" data-i18n="templateTireRotation">Tire rotation (7.5k mi / 6 mo)</option>
-            <option value="brakeFluid" data-i18n="templateBrakeFluid">Brake fluid (30k mi / 24 mo)</option>
-            <option value="transmission" data-i18n="templateTransmission">Transmission fluid (60k mi / 36 mo)</option>
-            <option value="airFilter" data-i18n="templateAirFilter">Air filter (30k mi / 24 mo)</option>
-            <option value="cabinFilter" data-i18n="templateCabinFilter">Cabin filter (20k mi / 12 mo)</option>
-            <option value="sparkPlugs" data-i18n="templateSparkPlugs">Spark plugs (60k mi)</option>
-            <option value="coolant" data-i18n="templateCoolant">Coolant (50k mi / 36 mo)</option>
-            <option value="battery" data-i18n="templateBattery">Battery check (50k mi / 48 mo)</option>
+            <optgroup data-i18n-label="templateGroupRoutine" label="Routine">
+              <option value="oil" data-i18n="templateOil">Oil change (5k mi / 6 mo)</option>
+              <option value="tireRotation" data-i18n="templateTireRotation">Tire rotation (7.5k mi / 6 mo)</option>
+              <option value="airFilter" data-i18n="templateAirFilter">Air filter (30k mi / 24 mo)</option>
+              <option value="cabinFilter" data-i18n="templateCabinFilter">Cabin filter (20k mi / 12 mo)</option>
+              <option value="sparkPlugs" data-i18n="templateSparkPlugs">Spark plugs (60k mi)</option>
+              <option value="coolant" data-i18n="templateCoolant">Coolant (50k mi / 36 mo)</option>
+              <option value="battery" data-i18n="templateBattery">Battery check (50k mi / 48 mo)</option>
+              <option value="brakeFluid" data-i18n="templateBrakeFluid">Brake fluid (30k mi / 24 mo)</option>
+              <option value="transmission" data-i18n="templateTransmission">Transmission fluid (60k mi / 36 mo)</option>
+            </optgroup>
+            <optgroup data-i18n-label="templateGroupOffroad" label="Offroad / Drivetrain">
+              <option value="diffFront" data-i18n="templateDiffFront">Front diff fluid (30k mi / 24 mo)</option>
+              <option value="diffRear" data-i18n="templateDiffRear">Rear diff fluid (30k mi / 24 mo)</option>
+              <option value="transferCase" data-i18n="templateTransferCase">Transfer case fluid (30k mi / 24 mo)</option>
+              <option value="wheelBearing" data-i18n="templateWheelBearing">Wheel bearing repack (30k mi)</option>
+              <option value="uJoints" data-i18n="templateUJoints">U-joints grease (10k mi)</option>
+              <option value="steering" data-i18n="templateSteering">Steering linkage inspect (10k mi)</option>
+            </optgroup>
           </select>
         </div>
         <form id="maintenanceForm">
           <input type="date" id="mDate" required>
           <input type="number" id="mOdometer" placeholder="Odometer (mi)" required>
           <select id="mType">
-            <option value="Oil change" data-i18n="oilChange">Oil change</option>
-            <option value="Tire rotation" data-i18n="tireRotation">Tire rotation</option>
-            <option value="Tire replacement" data-i18n="tireReplacement">Tire replacement</option>
-            <option value="Brake pads" data-i18n="brakePads">Brake pads</option>
-            <option value="Brake fluid" data-i18n="brakeFluid">Brake fluid</option>
-            <option value="Coolant" data-i18n="coolant">Coolant</option>
-            <option value="Transmission fluid" data-i18n="transmissionFluid">Transmission fluid</option>
-            <option value="Differential fluid" data-i18n="differentialFluid">Differential fluid</option>
-            <option value="Transfer case" data-i18n="transferCase">Transfer case</option>
-            <option value="Air filter" data-i18n="airFilter">Air filter</option>
-            <option value="Cabin filter" data-i18n="cabinFilter">Cabin filter</option>
-            <option value="Spark plugs" data-i18n="sparkPlugs">Spark plugs</option>
-            <option value="Battery" data-i18n="battery">Battery</option>
-            <option value="Wipers" data-i18n="wipers">Wipers</option>
-            <option value="Alignment" data-i18n="alignment">Alignment</option>
-            <option value="Inspection" data-i18n="inspection">Inspection</option>
-            <option value="Other" data-i18n="other">Other</option>
+            <optgroup data-i18n-label="typeGroupFluids" label="Fluids">
+              <option value="Oil change" data-i18n="oilChange">Oil change</option>
+              <option value="Brake fluid" data-i18n="brakeFluid">Brake fluid</option>
+              <option value="Coolant" data-i18n="coolant">Coolant</option>
+              <option value="Transmission fluid" data-i18n="transmissionFluid">Transmission fluid</option>
+              <option value="Differential fluid front" data-i18n="diffFluidFront">Differential fluid — front</option>
+              <option value="Differential fluid rear" data-i18n="diffFluidRear">Differential fluid — rear</option>
+              <option value="Transfer case fluid" data-i18n="transferCaseFluid">Transfer case fluid</option>
+              <option value="Power steering fluid" data-i18n="psFluid">Power steering fluid</option>
+            </optgroup>
+            <optgroup data-i18n-label="typeGroupTiresBrakes" label="Tires / Brakes">
+              <option value="Tire rotation" data-i18n="tireRotation">Tire rotation</option>
+              <option value="Tire replacement" data-i18n="tireReplacement">Tire replacement</option>
+              <option value="Brake pads" data-i18n="brakePads">Brake pads</option>
+              <option value="Brake rotors" data-i18n="brakeRotors">Brake rotors</option>
+              <option value="Alignment" data-i18n="alignment">Alignment</option>
+              <option value="Wheel re-torque" data-i18n="wheelRetorque">Wheel re-torque</option>
+            </optgroup>
+            <optgroup data-i18n-label="typeGroupOffroad" label="Drivetrain / Offroad">
+              <option value="Wheel bearing service" data-i18n="wheelBearing">Wheel bearing service</option>
+              <option value="U-joints grease" data-i18n="uJointsGrease">U-joints (grease)</option>
+              <option value="U-joints replace" data-i18n="uJointsReplace">U-joints (replace)</option>
+              <option value="Ball joints" data-i18n="ballJoints">Ball joints</option>
+              <option value="Tie rod / drag link" data-i18n="tieRodDragLink">Tie rod / drag link</option>
+              <option value="Track bar" data-i18n="trackBar">Track bar</option>
+              <option value="Steering stabilizer" data-i18n="steeringStabilizer">Steering stabilizer</option>
+              <option value="Control arm bushings" data-i18n="controlArmBushings">Control arm bushings</option>
+              <option value="Skid plate inspect" data-i18n="skidPlateInspect">Skid plate inspect</option>
+              <option value="Lift kit re-torque" data-i18n="liftRetorque">Lift kit re-torque</option>
+            </optgroup>
+            <optgroup data-i18n-label="typeGroupTuneup" label="Tune-up / Other">
+              <option value="Air filter" data-i18n="airFilter">Air filter</option>
+              <option value="Cabin filter" data-i18n="cabinFilter">Cabin filter</option>
+              <option value="Spark plugs" data-i18n="sparkPlugs">Spark plugs</option>
+              <option value="Battery" data-i18n="battery">Battery</option>
+              <option value="Belts / hoses" data-i18n="beltsHoses">Belts / hoses</option>
+              <option value="Wipers" data-i18n="wipers">Wipers</option>
+              <option value="Inspection" data-i18n="inspection">Inspection</option>
+              <option value="Other" data-i18n="other">Other</option>
+            </optgroup>
           </select>
           <input type="text" id="mOtherType" class="hidden" placeholder="Specify if Other">
           <label><input type="checkbox" id="mShop"> <span data-i18n="shop">Shop</span> (<span data-i18n="diy">DIY</span>)</label>
@@ -324,6 +394,24 @@
               <input type="number" id="mIntervalMiles" placeholder="Interval (miles)">
               <input type="number" id="mIntervalMonths" placeholder="Interval (months)">
             </div>
+          </details>
+          <details class="measurements-details">
+            <summary data-i18n="measurements">Measurements (optional)</summary>
+            <div class="measurements-grid">
+              <label><span data-i18n="padFront">Pad thickness front (mm)</span><input type="number" step="0.1" id="mPadFront"></label>
+              <label><span data-i18n="padRear">Pad thickness rear (mm)</span><input type="number" step="0.1" id="mPadRear"></label>
+              <label><span data-i18n="treadFL">Tread FL (32nds)</span><input type="number" step="1" id="mTreadFL"></label>
+              <label><span data-i18n="treadFR">Tread FR (32nds)</span><input type="number" step="1" id="mTreadFR"></label>
+              <label><span data-i18n="treadRL">Tread RL (32nds)</span><input type="number" step="1" id="mTreadRL"></label>
+              <label><span data-i18n="treadRR">Tread RR (32nds)</span><input type="number" step="1" id="mTreadRR"></label>
+              <label class="measurement-wide"><span data-i18n="dotDate">DOT date code (e.g. 3422)</span><input type="text" id="mDotDate" pattern="[0-9]{4}"></label>
+            </div>
+          </details>
+          <details class="followup-details">
+            <summary data-i18n="followUp">Schedule follow-up (optional)</summary>
+            <label><input type="checkbox" id="mFollowUpRetorque"> <span data-i18n="followUpRetorque">Re-torque lug nuts at +50 miles</span></label>
+            <label><input type="checkbox" id="mFollowUpLift"> <span data-i18n="followUpLift">Re-torque lift-kit bolts at +500 miles</span></label>
+            <label><input type="checkbox" id="mFollowUpAlignment"> <span data-i18n="followUpAlignment">Alignment check at +500 miles</span></label>
           </details>
           <label data-i18n="maintPhoto">Receipt (optional)</label>
           <input type="file" id="mPhotoFile" accept="image/*">
@@ -350,6 +438,23 @@
           <input type="text" id="fStation" placeholder="Station">
           <label><input type="checkbox" id="fFullTank" checked> <span data-i18n="fullTank">Full Tank</span></label>
           <input type="number" id="fOctane" placeholder="Octane">
+          <select id="fFuelType">
+            <option value="" data-i18n="fuelTypePlaceholder">Fuel type…</option>
+            <option value="Regular" data-i18n="fuelRegular">Regular (87)</option>
+            <option value="Mid" data-i18n="fuelMid">Mid-grade (89)</option>
+            <option value="Premium" data-i18n="fuelPremium">Premium (91+)</option>
+            <option value="Diesel" data-i18n="fuelDiesel">Diesel</option>
+            <option value="E85" data-i18n="fuelE85">E85</option>
+            <option value="Electric" data-i18n="fuelElectric">Electric (kWh)</option>
+          </select>
+          <select id="fDriving">
+            <option value="" data-i18n="drivingPlaceholder">Driving conditions…</option>
+            <option value="Highway" data-i18n="drivingHighway">Highway</option>
+            <option value="Mixed" data-i18n="drivingMixed">Mixed</option>
+            <option value="City" data-i18n="drivingCity">City / short trips</option>
+            <option value="Offroad" data-i18n="drivingOffroad">Offroad / trail</option>
+            <option value="Towing" data-i18n="drivingTowing">Towing</option>
+          </select>
           <button type="submit" class="btn" data-i18n="addEntry">Add Entry</button>
         </form>
         <div class="g2">
@@ -377,8 +482,14 @@
             <option value="Tires/Wheels" data-i18n="tiresWheels">Tires/Wheels</option>
             <option value="Bumper" data-i18n="bumper">Bumper</option>
             <option value="Lighting" data-i18n="lighting">Lighting</option>
+            <option value="Skid plates" data-i18n="skidPlates">Skid plates</option>
+            <option value="Sliders" data-i18n="sliders">Sliders / rock rails</option>
             <option value="Armor" data-i18n="armor">Armor</option>
-            <option value="Recovery" data-i18n="recovery">Recovery</option>
+            <option value="Winch" data-i18n="winch">Winch</option>
+            <option value="Recovery gear" data-i18n="recoveryGear">Recovery gear</option>
+            <option value="Gearing / Lockers" data-i18n="gearingLockers">Gearing / lockers / axles</option>
+            <option value="Snorkel" data-i18n="snorkel">Snorkel</option>
+            <option value="Cage / Roll bar" data-i18n="cageRollbar">Cage / roll bar</option>
             <option value="Interior" data-i18n="interior">Interior</option>
             <option value="Audio" data-i18n="audio">Audio</option>
             <option value="Electrical" data-i18n="electrical">Electrical</option>
@@ -392,6 +503,11 @@
           <textarea id="modNotes" placeholder="Notes"></textarea>
           <label><input type="checkbox" id="modInstalled" checked> <span data-i18n="stillInstalled">Still Installed</span></label>
           <input type="date" id="modRemovedDate" class="hidden" data-i18n-placeholder="removedOn" placeholder="Removed on">
+          <details class="followup-details">
+            <summary data-i18n="followUp">Schedule follow-up (optional)</summary>
+            <label><input type="checkbox" id="modFollowUpAlignment"> <span data-i18n="followUpAlignment">Alignment check at +500 miles</span></label>
+            <label><input type="checkbox" id="modFollowUpLift"> <span data-i18n="followUpLift">Re-torque lift-kit bolts at +500 miles</span></label>
+          </details>
           <label data-i18n="modPhoto">Photo (optional)</label>
           <input type="file" id="modPhotoFile" accept="image/*">
           <img id="modPhotoPreview" class="photo-preview hidden" alt="">
@@ -399,6 +515,30 @@
         </form>
         <input type="search" id="modsSearch" class="search-input" data-i18n-placeholder="searchPlaceholder" placeholder="Search…">
         <div id="modsList"></div>
+      </div>
+    </div>
+    <div id="trails" class="tab-content hidden">
+      <div class="card">
+        <h2 data-i18n="trailsLog">Trail Log</h2>
+        <form id="trailsForm">
+          <input type="date" id="trailDate" required>
+          <input type="text" id="trailName" data-i18n-placeholder="trailName" placeholder="Trail name" required>
+          <input type="number" step="0.1" id="trailDuration" data-i18n-placeholder="trailDuration" placeholder="Duration (hours)">
+          <fieldset class="trail-conditions">
+            <legend data-i18n="trailConditions">Trail conditions (check all that apply)</legend>
+            <label><input type="checkbox" id="trailWater" value="water"> <span data-i18n="trailWater">💧 Water crossing</span></label>
+            <label><input type="checkbox" id="trailMud" value="mud"> <span data-i18n="trailMud">🟤 Mud</span></label>
+            <label><input type="checkbox" id="trailRock" value="rock"> <span data-i18n="trailRock">🪨 Rock crawling</span></label>
+            <label><input type="checkbox" id="trailSand" value="sand"> <span data-i18n="trailSand">🏜️ Sand / dust</span></label>
+            <label><input type="checkbox" id="trailSnow" value="snow"> <span data-i18n="trailSnow">❄️ Snow / ice</span></label>
+            <label><input type="checkbox" id="trailHeavy" value="heavy"> <span data-i18n="trailHeavy">⚠️ Heavy low-range / crawl</span></label>
+          </fieldset>
+          <textarea id="trailNotes" data-i18n-placeholder="trailNotes" placeholder="Notes — obstacles, damage, companions"></textarea>
+          <p class="trail-hint" data-i18n="trailHint">Water crossings auto-schedule a differential + transfer-case fluid check.</p>
+          <button type="submit" class="btn" data-i18n="addTrail">Log Trail Run</button>
+        </form>
+        <input type="search" id="trailsSearch" class="search-input" data-i18n-placeholder="searchPlaceholder" placeholder="Search…">
+        <ul id="trailsList"></ul>
       </div>
     </div>
     <div id="parts" class="tab-content hidden">
@@ -433,6 +573,30 @@
           <input type="number" step="0.1" id="vMpgGoal" data-i18n-placeholder="mpgGoal" placeholder="MPG goal">
           <input type="number" step="0.01" id="vMonthlyBudget" data-i18n-placeholder="monthlyBudget" placeholder="Monthly budget (USD)">
           <input type="number" step="0.01" id="vAnnualBudget" data-i18n-placeholder="annualBudget" placeholder="Annual budget (USD)">
+          <details class="drivetrain-details">
+            <summary data-i18n="drivetrainSpecs">Drivetrain specs (optional)</summary>
+            <select id="vEngine">
+              <option value="" data-i18n="enginePlaceholder">Engine…</option>
+              <option value="3.6L Pentastar">3.6L Pentastar</option>
+              <option value="2.0L Turbo">2.0L Turbo</option>
+              <option value="3.0L EcoDiesel">3.0L EcoDiesel</option>
+              <option value="4xe PHEV">4xe PHEV</option>
+              <option value="6.4L HEMI">6.4L HEMI</option>
+              <option value="Other" data-i18n="other">Other</option>
+            </select>
+            <select id="vTransmission">
+              <option value="" data-i18n="transmissionPlaceholder">Transmission…</option>
+              <option value="Auto 8-speed">Auto 8-speed</option>
+              <option value="Auto 6-speed">Auto 6-speed</option>
+              <option value="Manual 6-speed">Manual 6-speed</option>
+              <option value="Manual 5-speed">Manual 5-speed</option>
+            </select>
+            <input type="text" id="vTransferCase" data-i18n-placeholder="transferCasePlaceholder" placeholder="Transfer case (e.g. Rock-Trac, NV241)">
+            <input type="text" id="vAxleRatio" data-i18n-placeholder="axleRatioPlaceholder" placeholder="Axle ratio (e.g. 4.10)">
+            <input type="text" id="vTireSize" data-i18n-placeholder="tireSizePlaceholder" placeholder='Tire size (e.g. 35x12.50R17)'>
+            <input type="text" id="vLiftHeight" data-i18n-placeholder="liftHeightPlaceholder" placeholder='Lift (e.g. 2.5")'>
+          </details>
+          <label class="severe-service-label"><input type="checkbox" id="vSevereService"> <span data-i18n="severeService">Severe service (halves template intervals — dust, water, low-range, towing)</span></label>
           <button type="submit" class="btn" data-i18n="addVehicleBtn">Add Vehicle</button>
         </form>
         <h3 data-i18n="editVehicle">Edit Active Vehicle</h3>
@@ -452,6 +616,30 @@
           <input type="number" step="0.01" id="eMonthlyBudget" data-i18n-placeholder="monthlyBudget" placeholder="Monthly budget (USD)">
           <input type="number" step="0.01" id="eAnnualBudget" data-i18n-placeholder="annualBudget" placeholder="Annual budget (USD)">
           <input type="number" step="0.01" id="eManualValue" data-i18n-placeholder="manualValue" placeholder="Manual value override (USD)">
+          <details class="drivetrain-details">
+            <summary data-i18n="drivetrainSpecs">Drivetrain specs (optional)</summary>
+            <select id="eEngine">
+              <option value="" data-i18n="enginePlaceholder">Engine…</option>
+              <option value="3.6L Pentastar">3.6L Pentastar</option>
+              <option value="2.0L Turbo">2.0L Turbo</option>
+              <option value="3.0L EcoDiesel">3.0L EcoDiesel</option>
+              <option value="4xe PHEV">4xe PHEV</option>
+              <option value="6.4L HEMI">6.4L HEMI</option>
+              <option value="Other" data-i18n="other">Other</option>
+            </select>
+            <select id="eTransmission">
+              <option value="" data-i18n="transmissionPlaceholder">Transmission…</option>
+              <option value="Auto 8-speed">Auto 8-speed</option>
+              <option value="Auto 6-speed">Auto 6-speed</option>
+              <option value="Manual 6-speed">Manual 6-speed</option>
+              <option value="Manual 5-speed">Manual 5-speed</option>
+            </select>
+            <input type="text" id="eTransferCase" data-i18n-placeholder="transferCasePlaceholder" placeholder="Transfer case">
+            <input type="text" id="eAxleRatio" data-i18n-placeholder="axleRatioPlaceholder" placeholder="Axle ratio">
+            <input type="text" id="eTireSize" data-i18n-placeholder="tireSizePlaceholder" placeholder="Tire size">
+            <input type="text" id="eLiftHeight" data-i18n-placeholder="liftHeightPlaceholder" placeholder="Lift">
+          </details>
+          <label class="severe-service-label"><input type="checkbox" id="eSevereService"> <span data-i18n="severeService">Severe service</span></label>
           <button type="submit" class="btn" data-i18n="saveVehicle">Save changes</button>
         </form>
         <button id="deleteVehicleBtn" class="btn btn-danger" data-i18n="deleteVehicle">Delete active vehicle</button>
@@ -559,6 +747,7 @@
         tabFuel: "Fuel",
         tabMods: "Mods",
         tabParts: "Parts",
+        tabTrails: "Trails",
         tabSettings: "Settings",
         vehicleCard: "Vehicle",
         serviceReminders: "Service Reminders",
@@ -744,6 +933,95 @@
         loaderOr: "or",
         loaderExportTitle: "💾",
         loaderDeleteTitle: "🗑",
+        templateGroupRoutine: "Routine",
+        templateGroupOffroad: "Offroad / Drivetrain",
+        templateDiffFront: "Front diff fluid (30k mi / 24 mo)",
+        templateDiffRear: "Rear diff fluid (30k mi / 24 mo)",
+        templateTransferCase: "Transfer case fluid (30k mi / 24 mo)",
+        templateWheelBearing: "Wheel bearing repack (30k mi)",
+        templateUJoints: "U-joints grease (10k mi)",
+        templateSteering: "Steering linkage inspect (10k mi)",
+        typeGroupFluids: "Fluids",
+        typeGroupTiresBrakes: "Tires / Brakes",
+        typeGroupOffroad: "Drivetrain / Offroad",
+        typeGroupTuneup: "Tune-up / Other",
+        diffFluidFront: "Differential fluid — front",
+        diffFluidRear: "Differential fluid — rear",
+        transferCaseFluid: "Transfer case fluid",
+        psFluid: "Power steering fluid",
+        brakeRotors: "Brake rotors",
+        wheelRetorque: "Wheel re-torque",
+        wheelBearing: "Wheel bearing service",
+        uJointsGrease: "U-joints (grease)",
+        uJointsReplace: "U-joints (replace)",
+        ballJoints: "Ball joints",
+        tieRodDragLink: "Tie rod / drag link",
+        trackBar: "Track bar",
+        steeringStabilizer: "Steering stabilizer",
+        controlArmBushings: "Control arm bushings",
+        skidPlateInspect: "Skid plate inspect",
+        liftRetorque: "Lift kit re-torque",
+        beltsHoses: "Belts / hoses",
+        measurements: "Measurements (optional)",
+        padFront: "Pad thickness front (mm)",
+        padRear: "Pad thickness rear (mm)",
+        treadFL: "Tread FL (32nds)",
+        treadFR: "Tread FR (32nds)",
+        treadRL: "Tread RL (32nds)",
+        treadRR: "Tread RR (32nds)",
+        dotDate: "DOT date code (e.g. 3422)",
+        followUp: "Schedule follow-up (optional)",
+        followUpRetorque: "Re-torque lug nuts at +50 miles",
+        followUpLift: "Re-torque lift-kit bolts at +500 miles",
+        followUpAlignment: "Alignment check at +500 miles",
+        fuelTypePlaceholder: "Fuel type…",
+        fuelRegular: "Regular (87)",
+        fuelMid: "Mid-grade (89)",
+        fuelPremium: "Premium (91+)",
+        fuelDiesel: "Diesel",
+        fuelE85: "E85",
+        fuelElectric: "Electric (kWh)",
+        drivingPlaceholder: "Driving conditions…",
+        drivingHighway: "Highway",
+        drivingMixed: "Mixed",
+        drivingCity: "City / short trips",
+        drivingOffroad: "Offroad / trail",
+        drivingTowing: "Towing",
+        drivetrainSpecs: "Drivetrain specs (optional)",
+        enginePlaceholder: "Engine…",
+        transmissionPlaceholder: "Transmission…",
+        transferCasePlaceholder: "Transfer case (e.g. Rock-Trac, NV241)",
+        axleRatioPlaceholder: "Axle ratio (e.g. 4.10)",
+        tireSizePlaceholder: 'Tire size (e.g. 35x12.50R17)',
+        liftHeightPlaceholder: 'Lift (e.g. 2.5")',
+        severeService: "Severe service (halves template intervals — dust, water, low-range, towing)",
+        severeServiceBadge: "SEVERE",
+        skidPlates: "Skid plates",
+        sliders: "Sliders / rock rails",
+        winch: "Winch",
+        recoveryGear: "Recovery gear",
+        gearingLockers: "Gearing / lockers / axles",
+        snorkel: "Snorkel",
+        cageRollbar: "Cage / roll bar",
+        trailsLog: "Trail Log",
+        trailName: "Trail name",
+        trailDuration: "Duration (hours)",
+        trailConditions: "Trail conditions (check all that apply)",
+        trailWater: "💧 Water crossing",
+        trailMud: "🟤 Mud",
+        trailRock: "🪨 Rock crawling",
+        trailSand: "🏜️ Sand / dust",
+        trailSnow: "❄️ Snow / ice",
+        trailHeavy: "⚠️ Heavy low-range / crawl",
+        trailNotes: "Notes — obstacles, damage, companions",
+        trailHint: "Water crossings auto-schedule a differential + transfer-case fluid check.",
+        addTrail: "Log Trail Run",
+        noTrails: "No trail runs logged yet.",
+        noTrailsMatch: "No trails match your search.",
+        trailsAutoReminder: "Auto-scheduled: diff + transfer case fluid check",
+        trailsAutoTireReminder: "Auto-scheduled: wheel re-torque + lug nut check",
+        maintPerMile: "Maintenance $/mi",
+        fuelPerMile: "Fuel $/mi",
         savedInfoVehicle: "vehicle",
         savedInfoVehicles: "vehicles",
         savedInfoMaint: "maintenance",
@@ -764,6 +1042,7 @@
         tabFuel: "Combustible",
         tabMods: "Mods",
         tabParts: "Piezas",
+        tabTrails: "Rutas",
         tabSettings: "Configuración",
         vehicleCard: "Vehículo",
         serviceReminders: "Recordatorios de Servicio",
@@ -947,6 +1226,95 @@
         loaderOr: "o",
         loaderExportTitle: "💾",
         loaderDeleteTitle: "🗑",
+        templateGroupRoutine: "Rutina",
+        templateGroupOffroad: "Offroad / Tracción",
+        templateDiffFront: "Fluido diferencial delantero (30k mi / 24 mes)",
+        templateDiffRear: "Fluido diferencial trasero (30k mi / 24 mes)",
+        templateTransferCase: "Fluido caja transfer (30k mi / 24 mes)",
+        templateWheelBearing: "Reempacar rodamientos (30k mi)",
+        templateUJoints: "Engrasar crucetas (10k mi)",
+        templateSteering: "Inspección dirección (10k mi)",
+        typeGroupFluids: "Fluidos",
+        typeGroupTiresBrakes: "Neumáticos / Frenos",
+        typeGroupOffroad: "Tracción / Offroad",
+        typeGroupTuneup: "Afinación / Otros",
+        diffFluidFront: "Fluido diferencial — delantero",
+        diffFluidRear: "Fluido diferencial — trasero",
+        transferCaseFluid: "Fluido caja transfer",
+        psFluid: "Fluido dirección asistida",
+        brakeRotors: "Discos de freno",
+        wheelRetorque: "Re-torque de ruedas",
+        wheelBearing: "Servicio de rodamientos",
+        uJointsGrease: "Crucetas (engrasar)",
+        uJointsReplace: "Crucetas (reemplazar)",
+        ballJoints: "Rótulas",
+        tieRodDragLink: "Barra / barra de arrastre",
+        trackBar: "Barra panhard",
+        steeringStabilizer: "Estabilizador de dirección",
+        controlArmBushings: "Bujes brazos de control",
+        skidPlateInspect: "Inspección protectores",
+        liftRetorque: "Re-torque kit de elevación",
+        beltsHoses: "Correas / mangueras",
+        measurements: "Mediciones (opcional)",
+        padFront: "Espesor pastilla delantera (mm)",
+        padRear: "Espesor pastilla trasera (mm)",
+        treadFL: "Profundidad DI (32avos)",
+        treadFR: "Profundidad DD (32avos)",
+        treadRL: "Profundidad TI (32avos)",
+        treadRR: "Profundidad TD (32avos)",
+        dotDate: "Código fecha DOT (ej. 3422)",
+        followUp: "Programar seguimiento (opcional)",
+        followUpRetorque: "Re-torque tuercas a +50 millas",
+        followUpLift: "Re-torque pernos kit a +500 millas",
+        followUpAlignment: "Revisar alineación a +500 millas",
+        fuelTypePlaceholder: "Tipo de combustible…",
+        fuelRegular: "Regular (87)",
+        fuelMid: "Mediano (89)",
+        fuelPremium: "Premium (91+)",
+        fuelDiesel: "Diésel",
+        fuelE85: "E85",
+        fuelElectric: "Eléctrico (kWh)",
+        drivingPlaceholder: "Condiciones de manejo…",
+        drivingHighway: "Carretera",
+        drivingMixed: "Mixto",
+        drivingCity: "Ciudad / viajes cortos",
+        drivingOffroad: "Offroad / trocha",
+        drivingTowing: "Remolque",
+        drivetrainSpecs: "Especificaciones (opcional)",
+        enginePlaceholder: "Motor…",
+        transmissionPlaceholder: "Transmisión…",
+        transferCasePlaceholder: "Caja transfer (ej. Rock-Trac, NV241)",
+        axleRatioPlaceholder: "Relación (ej. 4.10)",
+        tireSizePlaceholder: "Neumático (ej. 35x12.50R17)",
+        liftHeightPlaceholder: "Elevación (ej. 2.5\")",
+        severeService: "Servicio severo (reduce intervalos a la mitad — polvo, agua, crawl, remolque)",
+        severeServiceBadge: "SEVERO",
+        skidPlates: "Protectores bajos",
+        sliders: "Estribos / rock rails",
+        winch: "Winch",
+        recoveryGear: "Equipo de recuperación",
+        gearingLockers: "Relaciones / bloqueos / ejes",
+        snorkel: "Snorkel",
+        cageRollbar: "Jaula / barra antivuelco",
+        trailsLog: "Registro de Rutas",
+        trailName: "Nombre de la ruta",
+        trailDuration: "Duración (horas)",
+        trailConditions: "Condiciones (marca las que apliquen)",
+        trailWater: "💧 Cruce de agua",
+        trailMud: "🟤 Barro",
+        trailRock: "🪨 Escalada en roca",
+        trailSand: "🏜️ Arena / polvo",
+        trailSnow: "❄️ Nieve / hielo",
+        trailHeavy: "⚠️ Low-range / crawl intenso",
+        trailNotes: "Notas — obstáculos, daños, acompañantes",
+        trailHint: "Los cruces de agua agendan una revisión de diferenciales + caja transfer.",
+        addTrail: "Registrar ruta",
+        noTrails: "Aún no hay rutas registradas.",
+        noTrailsMatch: "Sin rutas que coincidan.",
+        trailsAutoReminder: "Agendado: revisar diferenciales + caja transfer",
+        trailsAutoTireReminder: "Agendado: re-torque de ruedas + tuercas",
+        maintPerMile: "Mantenimiento $/mi",
+        fuelPerMile: "Combustible $/mi",
         savedInfoVehicle: "vehículo",
         savedInfoVehicles: "vehículos",
         savedInfoMaint: "mantenimiento",
@@ -963,7 +1331,7 @@
     let activeVehicleId = localStorage.getItem('activeVehicleId');
     let lastTab = localStorage.getItem('lastTab') || 'dashboard';
 
-    const DB_VERSION = 2;
+    const DB_VERSION = 3;
 
     // IndexedDB wrapper
     class DB {
@@ -1044,7 +1412,8 @@
       { name: 'maintenance', keyPath: 'id', indexes: [{ name: 'vehicleId', keyPath: 'vehicleId' }] },
       { name: 'fuel', keyPath: 'id', indexes: [{ name: 'vehicleId', keyPath: 'vehicleId' }] },
       { name: 'mods', keyPath: 'id', indexes: [{ name: 'vehicleId', keyPath: 'vehicleId' }] },
-      { name: 'parts', keyPath: 'id', indexes: [{ name: 'vehicleId', keyPath: 'vehicleId' }] }
+      { name: 'parts', keyPath: 'id', indexes: [{ name: 'vehicleId', keyPath: 'vehicleId' }] },
+      { name: 'trails', keyPath: 'id', indexes: [{ name: 'vehicleId', keyPath: 'vehicleId' }] }
     ];
 
     // Seed data
@@ -1090,6 +1459,8 @@
         if (!document.getElementById('fOdometer').value) document.getElementById('fOdometer').value = odo;
       } else if (tab === 'mods' && !editState.mods) {
         if (!document.getElementById('modDate').value) document.getElementById('modDate').value = today;
+      } else if (tab === 'trails' && !editState.trails) {
+        if (!document.getElementById('trailDate').value) document.getElementById('trailDate').value = today;
       }
     }
 
@@ -1103,6 +1474,7 @@
       else if (tab === 'fuel') loadFuel();
       else if (tab === 'mods') loadMods();
       else if (tab === 'parts') loadParts();
+      else if (tab === 'trails') loadTrails();
       else if (tab === 'dashboard') loadDashboard();
       autofillFormDefaults(tab);
     }
@@ -1179,7 +1551,7 @@
       toastTimeoutId = setTimeout(hideToast, ms);
     }
     // Edit-mode tracking per form
-    const editState = { maintenance: null, fuel: null, mods: null, parts: null };
+    const editState = { maintenance: null, fuel: null, mods: null, parts: null, trails: null };
     function setEditBanner(formEl, labelText, onCancel) {
       let banner = formEl.querySelector('.edit-banner');
       if (!labelText) {
@@ -1217,11 +1589,20 @@
       if (vehicle.plate) metaBits.push(`<span>Plate ${escHtml(vehicle.plate)}</span>`);
       if (vehicle.vin) metaBits.push(`<span>VIN …${escHtml(vehicle.vin.slice(-4))}</span>`);
       if (vehicle.purchaseDate) metaBits.push(`<span>Bought ${escHtml(vehicle.purchaseDate)}</span>`);
+      const specBits = [];
+      if (vehicle.engine) specBits.push(`<span>${escHtml(vehicle.engine)}</span>`);
+      if (vehicle.transmission) specBits.push(`<span>${escHtml(vehicle.transmission)}</span>`);
+      if (vehicle.axleRatio) specBits.push(`<span>${escHtml(vehicle.axleRatio)} gears</span>`);
+      if (vehicle.tireSize) specBits.push(`<span>${escHtml(vehicle.tireSize)}</span>`);
+      if (vehicle.liftHeight) specBits.push(`<span>${escHtml(vehicle.liftHeight)} lift</span>`);
+      if (vehicle.transferCase) specBits.push(`<span>${escHtml(vehicle.transferCase)}</span>`);
+      const badge = vehicle.severeService ? `<span class="severe-service-badge" title="Severe service">${t('severeServiceBadge')}</span>` : '';
       document.getElementById('vehicleCard').innerHTML = `
-        <p><strong>${escHtml(vehicle.nickname)}</strong></p>
+        <p><strong>${escHtml(vehicle.nickname)}</strong>${badge}</p>
         <p>${escHtml(vehicle.year)} ${escHtml(vehicle.make)} ${escHtml(vehicle.model)} ${escHtml(vehicle.trim || '')}</p>
         <p>Odometer: ${escHtml(vehicle.odometer)} mi</p>
         ${metaBits.length ? `<p class="vehicle-meta">${metaBits.join('')}</p>` : ''}
+        ${specBits.length ? `<p class="vehicle-meta">${specBits.join('')}</p>` : ''}
       `;
 
       const currentOdometer = vehicle.odometer;
@@ -1367,22 +1748,19 @@
         <div class="stat-sub">${t('tcoMaintenance')} $${maintCost.toFixed(2)} · ${t('tcoFuel')} $${fuelCost.toFixed(2)} · ${t('tcoMods')} $${modCost.toFixed(2)}</div>
       `;
 
-      // Cost per mile — use max(odometer) - min(odometer) from fuel entries
-      const cpmCard = document.getElementById('cpmCard');
+      // Cost per mile — split maintenance from fuel
+      const cpmMaintCard = document.getElementById('cpmMaintCard');
+      const cpmFuelCard = document.getElementById('cpmFuelCard');
       const fuelOdos = allFuel.map(f => f.odometer).filter(n => n > 0);
-      if (fuelOdos.length >= 2) {
-        const miles = Math.max(...fuelOdos) - Math.min(...fuelOdos);
-        if (miles > 0) {
-          const cpm = tcoTotal / miles;
-          cpmCard.innerHTML = `
-            <div class="stat-big">$${cpm.toFixed(3)}</div>
-            <div class="stat-sub">${miles.toLocaleString()} ${t('milesDriven')}</div>
-          `;
-        } else {
-          cpmCard.innerHTML = `<p class="stat-sub">${t('noMileageYet')}</p>`;
-        }
+      const miles = fuelOdos.length >= 2 ? Math.max(...fuelOdos) - Math.min(...fuelOdos) : 0;
+      if (miles > 0) {
+        const cpmMaint = maintCost / miles;
+        const cpmFuel = fuelCost / miles;
+        cpmMaintCard.innerHTML = `<div class="stat-big">$${cpmMaint.toFixed(3)}</div><div class="stat-sub">${miles.toLocaleString()} ${t('milesDriven')}</div>`;
+        cpmFuelCard.innerHTML = `<div class="stat-big">$${cpmFuel.toFixed(3)}</div><div class="stat-sub">${miles.toLocaleString()} ${t('milesDriven')}</div>`;
       } else {
-        cpmCard.innerHTML = `<p class="stat-sub">${t('noMileageYet')}</p>`;
+        cpmMaintCard.innerHTML = `<p class="stat-sub">${t('noMileageYet')}</p>`;
+        cpmFuelCard.innerHTML = `<p class="stat-sub">${t('noMileageYet')}</p>`;
       }
 
       // Monthly spend trend (last 12 months)
@@ -1437,6 +1815,13 @@
       document.getElementById('eMonthlyBudget').value = vehicle.monthlyBudget || '';
       document.getElementById('eAnnualBudget').value = vehicle.annualBudget || '';
       document.getElementById('eManualValue').value = vehicle.manualValue || '';
+      document.getElementById('eEngine').value = vehicle.engine || '';
+      document.getElementById('eTransmission').value = vehicle.transmission || '';
+      document.getElementById('eTransferCase').value = vehicle.transferCase || '';
+      document.getElementById('eAxleRatio').value = vehicle.axleRatio || '';
+      document.getElementById('eTireSize').value = vehicle.tireSize || '';
+      document.getElementById('eLiftHeight').value = vehicle.liftHeight || '';
+      document.getElementById('eSevereService').checked = !!vehicle.severeService;
     }
 
     // Maintenance receipt photo
@@ -1475,24 +1860,40 @@
       await loadDashboard();
     });
 
-    // Quick templates
+    // Quick templates (severe-service halves the mileage + months when vehicle opts in)
     const MAINT_TEMPLATES = {
-      oil: { type: 'Oil change', miles: 5000, months: 6 },
-      tireRotation: { type: 'Tire rotation', miles: 7500, months: 6 },
-      brakeFluid: { type: 'Brake fluid', miles: 30000, months: 24 },
-      transmission: { type: 'Transmission fluid', miles: 60000, months: 36 },
-      airFilter: { type: 'Air filter', miles: 30000, months: 24 },
-      cabinFilter: { type: 'Cabin filter', miles: 20000, months: 12 },
-      sparkPlugs: { type: 'Spark plugs', miles: 60000, months: 0 },
-      coolant: { type: 'Coolant', miles: 50000, months: 36 },
-      battery: { type: 'Battery', miles: 50000, months: 48 }
+      oil:           { type: 'Oil change',                  miles: 5000,  months: 6  },
+      tireRotation:  { type: 'Tire rotation',               miles: 7500,  months: 6  },
+      brakeFluid:    { type: 'Brake fluid',                 miles: 30000, months: 24 },
+      transmission:  { type: 'Transmission fluid',          miles: 60000, months: 36 },
+      airFilter:     { type: 'Air filter',                  miles: 30000, months: 24 },
+      cabinFilter:   { type: 'Cabin filter',                miles: 20000, months: 12 },
+      sparkPlugs:    { type: 'Spark plugs',                 miles: 60000, months: 0  },
+      coolant:       { type: 'Coolant',                     miles: 50000, months: 36 },
+      battery:       { type: 'Battery',                     miles: 50000, months: 48 },
+      diffFront:     { type: 'Differential fluid front',    miles: 30000, months: 24 },
+      diffRear:      { type: 'Differential fluid rear',     miles: 30000, months: 24 },
+      transferCase:  { type: 'Transfer case fluid',         miles: 30000, months: 24 },
+      wheelBearing:  { type: 'Wheel bearing service',       miles: 30000, months: 0  },
+      uJoints:       { type: 'U-joints grease',             miles: 10000, months: 12 },
+      steering:      { type: 'Tie rod / drag link',         miles: 10000, months: 12 }
     };
-    document.getElementById('mTemplate').addEventListener('change', (e) => {
+
+    async function activeVehicleIsSevere() {
+      if (!activeVehicleId) return false;
+      const v = (await db.getAll('vehicles')).find(x => x.id === activeVehicleId);
+      return !!(v && v.severeService);
+    }
+
+    document.getElementById('mTemplate').addEventListener('change', async (e) => {
       const tpl = MAINT_TEMPLATES[e.target.value];
       if (!tpl) return;
+      const severe = await activeVehicleIsSevere();
+      const miles = tpl.miles ? Math.round(tpl.miles / (severe ? 2 : 1)) : 0;
+      const months = tpl.months ? Math.round(tpl.months / (severe ? 2 : 1)) : 0;
       document.getElementById('mType').value = tpl.type;
-      document.getElementById('mIntervalMiles').value = tpl.miles || '';
-      document.getElementById('mIntervalMonths').value = tpl.months || '';
+      document.getElementById('mIntervalMiles').value = miles || '';
+      document.getElementById('mIntervalMonths').value = months || '';
       const details = document.querySelector('.interval-details');
       if (details) details.open = true;
       if (!document.getElementById('mDate').value) {
@@ -1531,6 +1932,13 @@
         nextDueDate = dueDate.toISOString().split('T')[0];
       }
       
+      const treads = {
+        fl: +document.getElementById('mTreadFL').value || null,
+        fr: +document.getElementById('mTreadFR').value || null,
+        rl: +document.getElementById('mTreadRL').value || null,
+        rr: +document.getElementById('mTreadRR').value || null,
+      };
+      const hasTreads = Object.values(treads).some(v => v != null);
       const data = {
         id: editState.maintenance || crypto.randomUUID(),
         vehicleId: activeVehicleId,
@@ -1545,13 +1953,23 @@
         nextDueMiles: nextDueMiles,
         nextDueDate: nextDueDate,
         reminderShown: false,
-        photo: maintPhotoDataUrl
+        photo: maintPhotoDataUrl,
+        padFront: +document.getElementById('mPadFront').value || null,
+        padRear: +document.getElementById('mPadRear').value || null,
+        treadDepths: hasTreads ? treads : null,
+        dotDateCode: document.getElementById('mDotDate').value || null
       };
       if (editState.maintenance) {
         await db.put('maintenance', data);
         exitMaintenanceEdit();
       } else {
         await db.add('maintenance', data);
+        // Follow-up reminders — only when creating new entries
+        const spawns = [];
+        if (document.getElementById('mFollowUpRetorque').checked) spawns.push({ type: 'Wheel re-torque', miles: 50, note: 'Auto-scheduled after service' });
+        if (document.getElementById('mFollowUpLift').checked) spawns.push({ type: 'Lift kit re-torque', miles: 500, note: 'Auto-scheduled after service' });
+        if (document.getElementById('mFollowUpAlignment').checked) spawns.push({ type: 'Alignment', miles: 500, note: 'Auto-scheduled after service' });
+        for (const s of spawns) await spawnFollowUp(s, odometer);
       }
       await bumpVehicleOdometer(odometer);
       maintPhotoDataUrl = null;
@@ -1563,6 +1981,27 @@
       document.getElementById('mOtherType').classList.add('hidden');
       document.getElementById('mDate').focus();
     });
+
+    async function spawnFollowUp({ type, miles, note }, currentOdo) {
+      await db.add('maintenance', {
+        id: crypto.randomUUID(),
+        vehicleId: activeVehicleId,
+        date: new Date().toISOString().split('T')[0],
+        odometer: currentOdo,
+        type: type,
+        shop: false,
+        cost: 0,
+        notes: note,
+        intervalMiles: miles,
+        intervalMonths: null,
+        nextDueMiles: currentOdo + miles,
+        nextDueDate: null,
+        reminderShown: false,
+        reminderDismissed: false,
+        photo: null,
+        autoGenerated: true
+      });
+    }
 
     function exitMaintenanceEdit() {
       editState.maintenance = null;
@@ -1601,6 +2040,13 @@
         document.getElementById('mNotes').value = m.notes || '';
         document.getElementById('mIntervalMiles').value = m.intervalMiles || '';
         document.getElementById('mIntervalMonths').value = m.intervalMonths || '';
+        document.getElementById('mPadFront').value = m.padFront || '';
+        document.getElementById('mPadRear').value = m.padRear || '';
+        document.getElementById('mTreadFL').value = m.treadDepths?.fl || '';
+        document.getElementById('mTreadFR').value = m.treadDepths?.fr || '';
+        document.getElementById('mTreadRL').value = m.treadDepths?.rl || '';
+        document.getElementById('mTreadRR').value = m.treadDepths?.rr || '';
+        document.getElementById('mDotDate').value = m.dotDateCode || '';
         maintPhotoDataUrl = m.photo || null;
         const mPreview = document.getElementById('mPhotoPreview');
         if (m.photo) { mPreview.src = m.photo; mPreview.classList.remove('hidden'); }
@@ -1636,7 +2082,9 @@
         cost: cost,
         station: document.getElementById('fStation').value,
         fullTank: document.getElementById('fFullTank').checked,
-        octane: +document.getElementById('fOctane').value || null
+        octane: +document.getElementById('fOctane').value || null,
+        fuelType: document.getElementById('fFuelType').value || null,
+        drivingCondition: document.getElementById('fDriving').value || null
       };
       if (editState.fuel) {
         await db.put('fuel', data);
@@ -1679,6 +2127,8 @@
         document.getElementById('fStation').value = f.station || '';
         document.getElementById('fFullTank').checked = !!f.fullTank;
         document.getElementById('fOctane').value = f.octane || '';
+        document.getElementById('fFuelType').value = f.fuelType || '';
+        document.getElementById('fDriving').value = f.drivingCondition || '';
         const form = document.getElementById('fuelForm');
         setEditBanner(form, `${t('editingEntry')} ${f.date}`, () => { form.reset(); exitFuelEdit(); });
         form.querySelector('button[type="submit"]').textContent = t('updateEntry');
@@ -1902,6 +2352,15 @@
         exitModsEdit();
       } else {
         await db.add('mods', data);
+        // Spawn follow-ups for new mods (use latest vehicle odometer as anchor)
+        const spawns = [];
+        if (document.getElementById('modFollowUpAlignment').checked) spawns.push({ type: 'Alignment', miles: 500, note: 'Auto-scheduled after mod install' });
+        if (document.getElementById('modFollowUpLift').checked) spawns.push({ type: 'Lift kit re-torque', miles: 500, note: 'Auto-scheduled after mod install' });
+        if (spawns.length) {
+          const veh = (await db.getAll('vehicles')).find(v => v.id === activeVehicleId);
+          const anchorOdo = veh?.odometer || 0;
+          for (const s of spawns) await spawnFollowUp(s, anchorOdo);
+        }
       }
       modPhotoDataUrl = null;
       document.getElementById('modPhotoPreview').classList.add('hidden');
@@ -1938,6 +2397,13 @@
         mpgGoal: +document.getElementById('vMpgGoal').value || null,
         monthlyBudget: +document.getElementById('vMonthlyBudget').value || null,
         annualBudget: +document.getElementById('vAnnualBudget').value || null,
+        engine: document.getElementById('vEngine').value || null,
+        transmission: document.getElementById('vTransmission').value || null,
+        transferCase: document.getElementById('vTransferCase').value || null,
+        axleRatio: document.getElementById('vAxleRatio').value || null,
+        tireSize: document.getElementById('vTireSize').value || null,
+        liftHeight: document.getElementById('vLiftHeight').value || null,
+        severeService: document.getElementById('vSevereService').checked,
         createdAt: new Date(),
         updatedAt: new Date()
       };
@@ -1967,6 +2433,13 @@
       vehicle.monthlyBudget = +document.getElementById('eMonthlyBudget').value || null;
       vehicle.annualBudget = +document.getElementById('eAnnualBudget').value || null;
       vehicle.manualValue = +document.getElementById('eManualValue').value || null;
+      vehicle.engine = document.getElementById('eEngine').value || null;
+      vehicle.transmission = document.getElementById('eTransmission').value || null;
+      vehicle.transferCase = document.getElementById('eTransferCase').value || null;
+      vehicle.axleRatio = document.getElementById('eAxleRatio').value || null;
+      vehicle.tireSize = document.getElementById('eTireSize').value || null;
+      vehicle.liftHeight = document.getElementById('eLiftHeight').value || null;
+      vehicle.severeService = document.getElementById('eSevereService').checked;
       vehicle.updatedAt = new Date();
       await db.put('vehicles', vehicle);
       await loadVehicles();
@@ -1977,7 +2450,7 @@
       if (!activeVehicleId) return;
       if (!confirm(t('confirmDeleteVehicle'))) return;
       // cascade: delete this vehicle's maintenance, fuel, mods, parts
-      for (const store of ['maintenance', 'fuel', 'mods', 'parts']) {
+      for (const store of ['maintenance', 'fuel', 'mods', 'parts', 'trails']) {
         const items = (await db.getAll(store)).filter(x => x.vehicleId === activeVehicleId);
         for (const it of items) await db.delete(store, it.id);
       }
@@ -2114,6 +2587,133 @@ ${mods.map(m => `<tr><td>${esc(m.date)}</td><td>${esc(m.category)}</td><td>${esc
       }
     });
 
+    // Trails — form, list, search, CRUD, auto-spawn post-trail reminders
+    const TRAIL_CONDITION_IDS = ['trailWater', 'trailMud', 'trailRock', 'trailSand', 'trailSnow', 'trailHeavy'];
+
+    function readTrailConditions() {
+      return TRAIL_CONDITION_IDS.filter(id => document.getElementById(id).checked).map(id => document.getElementById(id).value);
+    }
+    function setTrailConditions(conditions) {
+      TRAIL_CONDITION_IDS.forEach(id => {
+        const el = document.getElementById(id);
+        el.checked = (conditions || []).includes(el.value);
+      });
+    }
+
+    async function maybeSpawnTrailFollowUps(conditions, odo) {
+      if (!activeVehicleId) return;
+      if (conditions.includes('water')) {
+        await spawnFollowUp({ type: 'Differential fluid front', miles: 50, note: 'Auto-scheduled after water crossing' }, odo);
+        await spawnFollowUp({ type: 'Differential fluid rear', miles: 50, note: 'Auto-scheduled after water crossing' }, odo);
+        await spawnFollowUp({ type: 'Transfer case fluid', miles: 50, note: 'Auto-scheduled after water crossing' }, odo);
+        await spawnFollowUp({ type: 'Wheel bearing service', miles: 100, note: 'Check after water crossing' }, odo);
+      }
+      if (conditions.includes('rock') || conditions.includes('heavy')) {
+        await spawnFollowUp({ type: 'Inspection', miles: 50, note: 'Post-crawl inspection: u-joints, tie rods, skid plates' }, odo);
+      }
+      if (conditions.includes('mud')) {
+        await spawnFollowUp({ type: 'Air filter', miles: 100, note: 'Check after mud run' }, odo);
+      }
+    }
+
+    document.getElementById('trailsForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!activeVehicleId) return;
+      const conditions = readTrailConditions();
+      const data = {
+        id: editState.trails || crypto.randomUUID(),
+        vehicleId: activeVehicleId,
+        date: document.getElementById('trailDate').value,
+        name: document.getElementById('trailName').value,
+        durationHours: +document.getElementById('trailDuration').value || null,
+        conditions,
+        notes: document.getElementById('trailNotes').value,
+        createdAt: new Date()
+      };
+      if (editState.trails) {
+        await db.put('trails', data);
+        exitTrailsEdit();
+      } else {
+        await db.add('trails', data);
+        const veh = (await db.getAll('vehicles')).find(v => v.id === activeVehicleId);
+        const anchorOdo = veh?.odometer || 0;
+        await maybeSpawnTrailFollowUps(conditions, anchorOdo);
+        if (conditions.length) {
+          showToast(conditions.includes('water') ? t('trailsAutoReminder') : t('importSuccess'));
+        }
+      }
+      await loadTrails();
+      await loadDashboard();
+      e.target.reset();
+      document.getElementById('trailName').focus();
+    });
+
+    function exitTrailsEdit() {
+      editState.trails = null;
+      setEditBanner(document.getElementById('trailsForm'), '', null);
+      document.querySelector('#trailsForm button[type="submit"]').textContent = t('addTrail');
+    }
+
+    async function loadTrails() {
+      const items = (await db.getAll('trails')).filter(x => x.vehicleId === activeVehicleId).sort((a, b) => new Date(b.date) - new Date(a.date));
+      renderTrails(items);
+    }
+
+    function renderTrails(items) {
+      const list = document.getElementById('trailsList');
+      list.className = 'entry-list';
+      if (items.length === 0) {
+        list.innerHTML = `<li class="empty-state">${t('noTrails')}</li>`;
+        return;
+      }
+      const query = (document.getElementById('trailsSearch')?.value || '').toLowerCase().trim();
+      const filtered = query
+        ? items.filter(x => [x.name, x.date, x.notes, (x.conditions || []).join(' ')].some(v => String(v || '').toLowerCase().includes(query)))
+        : items;
+      if (!filtered.length) {
+        list.innerHTML = `<li class="empty-state">${t('noTrailsMatch')}</li>`;
+        return;
+      }
+      list.innerHTML = filtered.map(x => {
+        const chips = (x.conditions || []).map(c => `<span class="trail-condition-chip">${escHtml(c)}</span>`).join('');
+        const dur = x.durationHours ? ` · ${x.durationHours}h` : '';
+        const notes = x.notes ? ` · ${escHtml(x.notes)}` : '';
+        return `<li>
+          <span class="entry-main">${escHtml(x.date)} · ${escHtml(x.name)}${dur} ${chips}${notes}</span>
+          ${rowActions(x.id)}
+        </li>`;
+      }).join('');
+    }
+
+    document.getElementById('trailsSearch').addEventListener('input', async () => {
+      const items = (await db.getAll('trails')).filter(x => x.vehicleId === activeVehicleId).sort((a, b) => new Date(b.date) - new Date(a.date));
+      renderTrails(items);
+    });
+
+    document.getElementById('trailsList').addEventListener('click', async (e) => {
+      const delEl = e.target.closest('.del-btn');
+      if (delEl) {
+        await confirmDelete('trails', delEl.dataset.id, loadTrails);
+        return;
+      }
+      const editEl = e.target.closest('.edit-btn');
+      if (editEl) {
+        const items = await db.getAll('trails');
+        const x = items.find(i => i.id === editEl.dataset.id);
+        if (!x) return;
+        editState.trails = x.id;
+        document.getElementById('trailDate').value = x.date || '';
+        document.getElementById('trailName').value = x.name || '';
+        document.getElementById('trailDuration').value = x.durationHours || '';
+        document.getElementById('trailNotes').value = x.notes || '';
+        setTrailConditions(x.conditions);
+        const form = document.getElementById('trailsForm');
+        setEditBanner(form, `${t('editingEntry')} ${x.name}`, () => { form.reset(); setTrailConditions([]); exitTrailsEdit(); });
+        form.querySelector('button[type="submit"]').textContent = t('updateEntry');
+        form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+
     // Parts form + list
     document.getElementById('partsForm').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -2173,7 +2773,8 @@ ${mods.map(m => `<tr><td>${esc(m.date)}</td><td>${esc(m.category)}</td><td>${esc
         maintenance: await db.getAll('maintenance'),
         fuel: await db.getAll('fuel'),
         mods: await db.getAll('mods'),
-        parts: await db.getAll('parts')
+        parts: await db.getAll('parts'),
+        trails: await db.getAll('trails')
       };
       const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
@@ -2193,7 +2794,7 @@ ${mods.map(m => `<tr><td>${esc(m.date)}</td><td>${esc(m.category)}</td><td>${esc
       for (const v of data.vehicles) {
         if (!v || typeof v !== 'object' || typeof v.id !== 'string' || typeof v.nickname !== 'string') return 'invalid vehicle entry';
       }
-      for (const key of ['maintenance', 'fuel', 'mods', 'parts']) {
+      for (const key of ['maintenance', 'fuel', 'mods', 'parts', 'trails']) {
         if (data[key] !== undefined && !Array.isArray(data[key])) return `${key} must be an array`;
         for (const it of data[key] || []) {
           if (!it || typeof it !== 'object' || typeof it.id !== 'string') return `invalid ${key} entry (missing id)`;
@@ -2217,6 +2818,7 @@ ${mods.map(m => `<tr><td>${esc(m.date)}</td><td>${esc(m.category)}</td><td>${esc
       loadFuel();
       loadMods();
       loadParts();
+      loadTrails();
     });
 
     document.getElementById('langToggle').addEventListener('click', () => {
@@ -2234,6 +2836,7 @@ ${mods.map(m => `<tr><td>${esc(m.date)}</td><td>${esc(m.category)}</td><td>${esc
         await db.clear('fuel');
         await db.clear('mods');
         await db.clear('parts');
+      await db.clear('trails');
         localStorage.clear();
         location.reload();
       }
@@ -2285,6 +2888,7 @@ ${mods.map(m => `<tr><td>${esc(m.date)}</td><td>${esc(m.category)}</td><td>${esc
       await db.clear('fuel');
       await db.clear('mods');
       await db.clear('parts');
+      await db.clear('trails');
       await loadApp();
       document.getElementById('loader').style.display = 'none';
     });
@@ -2322,7 +2926,8 @@ ${mods.map(m => `<tr><td>${esc(m.date)}</td><td>${esc(m.category)}</td><td>${esc
         maintenance: await db.getAll('maintenance'),
         fuel: await db.getAll('fuel'),
         mods: await db.getAll('mods'),
-        parts: await db.getAll('parts')
+        parts: await db.getAll('parts'),
+        trails: await db.getAll('trails')
       };
       const vehicle = data.vehicles.find(v => v.id === activeVehicleId) || data.vehicles[0];
       const slug = (vehicle?.nickname || 'all').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'all';
@@ -2346,6 +2951,7 @@ ${mods.map(m => `<tr><td>${esc(m.date)}</td><td>${esc(m.category)}</td><td>${esc
       await db.clear('fuel');
       await db.clear('mods');
       await db.clear('parts');
+      await db.clear('trails');
       localStorage.removeItem('activeVehicleId');
       await checkSavedData();
     });
@@ -2394,13 +3000,13 @@ ${mods.map(m => `<tr><td>${esc(m.date)}</td><td>${esc(m.category)}</td><td>${esc
     });
 
     // Keyboard: 1-6 switches tabs, ? opens help, Escape cancels edit / closes modals
-    const tabOrder = ['dashboard', 'maintenance', 'fuel', 'mods', 'parts', 'settings'];
+    const tabOrder = ['dashboard', 'maintenance', 'fuel', 'mods', 'trails', 'parts', 'settings'];
     document.addEventListener('keydown', (e) => {
       if (document.getElementById('loader').style.display !== 'none') return;
       const tag = document.activeElement?.tagName;
       const inField = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
       if (!inField && !e.metaKey && !e.ctrlKey && !e.altKey) {
-        if (/^[1-6]$/.test(e.key)) {
+        if (/^[1-7]$/.test(e.key)) {
           e.preventDefault();
           switchTab(tabOrder[+e.key - 1]);
           return;
@@ -2481,11 +3087,13 @@ ${mods.map(m => `<tr><td>${esc(m.date)}</td><td>${esc(m.category)}</td><td>${esc
       await db.clear('fuel');
       await db.clear('mods');
       await db.clear('parts');
+      await db.clear('trails');
       for (const v of data.vehicles) await db.add('vehicles', v);
       for (const m of data.maintenance || []) await db.add('maintenance', m);
       for (const f of data.fuel || []) await db.add('fuel', f);
       for (const mod of data.mods || []) await db.add('mods', mod);
       for (const p of data.parts || []) await db.add('parts', p);
+      for (const tr of data.trails || []) await db.add('trails', tr);
       await loadVehicles();
       showToast(t('importSuccess'));
     }
@@ -2578,6 +3186,7 @@ ${mods.map(m => `<tr><td>${esc(m.date)}</td><td>${esc(m.category)}</td><td>${esc
       await db.clear('fuel');
       await db.clear('mods');
       await db.clear('parts');
+      await db.clear('trails');
       const demoVehicles = [
         { id: crypto.randomUUID(), nickname: 'Wrangler Demo', make: 'Jeep', model: 'Wrangler', year: 2022, trim: 'Rubicon', color: 'Orange', vin: 'DEMOWRANG123', plate: 'DEMO1', purchaseDate: '2023-01-01', odometer: 15200, createdAt: new Date(), updatedAt: new Date() },
         { id: crypto.randomUUID(), nickname: 'Gladiator Demo', make: 'Jeep', model: 'Gladiator', year: 2023, trim: 'Overland', color: 'Gray', vin: 'DEMGLAD123', plate: 'DEMO2', purchaseDate: '2023-03-01', odometer: 9800, createdAt: new Date(), updatedAt: new Date() }
@@ -2605,7 +3214,8 @@ ${mods.map(m => `<tr><td>${esc(m.date)}</td><td>${esc(m.category)}</td><td>${esc
       await db.clear('fuel');
       await db.clear('mods');
       await db.clear('parts');
-      const demoVehicle = { id: crypto.randomUUID(), nickname: 'Wrangler Demo', make: 'Jeep', model: 'Wrangler', year: 2022, trim: 'Rubicon', color: 'Orange', vin: 'DEMOWRANG123', plate: 'DEMO1', purchaseDate: '2023-01-01', odometer: 15200, purchasePrice: 48000, mpgGoal: 18, monthlyBudget: 200, annualBudget: 1800, createdAt: new Date(), updatedAt: new Date() };
+      await db.clear('trails');
+      const demoVehicle = { id: crypto.randomUUID(), nickname: 'Wrangler Demo', make: 'Jeep', model: 'Wrangler', year: 2022, trim: 'Rubicon', color: 'Orange', vin: 'DEMOWRANG123', plate: 'DEMO1', purchaseDate: '2023-01-01', odometer: 15200, purchasePrice: 48000, mpgGoal: 18, monthlyBudget: 200, annualBudget: 1800, engine: '3.6L Pentastar', transmission: 'Auto 8-speed', transferCase: 'Rock-Trac', axleRatio: '4.10', tireSize: '35x12.50R17', liftHeight: '2.5"', severeService: true, createdAt: new Date(), updatedAt: new Date() };
       await db.add('vehicles', demoVehicle);
       const demoMaintenance = [
         { id: crypto.randomUUID(), vehicleId: demoVehicle.id, date: '2023-06-15', odometer: 12000, type: 'Oil change', shop: true, cost: 85, notes: 'First oil change at dealer' },
@@ -2656,7 +3266,8 @@ ${mods.map(m => `<tr><td>${esc(m.date)}</td><td>${esc(m.category)}</td><td>${esc
       await db.clear('fuel');
       await db.clear('mods');
       await db.clear('parts');
-      const demoVehicle = { id: crypto.randomUUID(), nickname: 'Gladiator Demo', make: 'Jeep', model: 'Gladiator', year: 2023, trim: 'Overland', color: 'Gray', vin: 'DEMGLAD123', plate: 'DEMO2', purchaseDate: '2023-03-01', odometer: 9800, purchasePrice: 52000, mpgGoal: 22, monthlyBudget: 250, annualBudget: 2400, createdAt: new Date(), updatedAt: new Date() };
+      await db.clear('trails');
+      const demoVehicle = { id: crypto.randomUUID(), nickname: 'Gladiator Demo', make: 'Jeep', model: 'Gladiator', year: 2023, trim: 'Overland', color: 'Gray', vin: 'DEMGLAD123', plate: 'DEMO2', purchaseDate: '2023-03-01', odometer: 9800, purchasePrice: 52000, mpgGoal: 22, monthlyBudget: 250, annualBudget: 2400, engine: '3.0L EcoDiesel', transmission: 'Auto 8-speed', transferCase: 'Command-Trac', axleRatio: '3.73', tireSize: '33x12.50R17', severeService: false, createdAt: new Date(), updatedAt: new Date() };
       await db.add('vehicles', demoVehicle);
       const demoMaintenance = [
         { id: crypto.randomUUID(), vehicleId: demoVehicle.id, date: '2023-06-01', odometer: 8500, type: 'Oil change', shop: true, cost: 95, notes: 'First service at dealer' },
@@ -2712,6 +3323,7 @@ ${mods.map(m => `<tr><td>${esc(m.date)}</td><td>${esc(m.category)}</td><td>${esc
       loadMods();
       loadMaintenance();
       loadParts();
+      loadTrails();
       refreshInstallStatus();
       refreshCacheInfo();
     }
