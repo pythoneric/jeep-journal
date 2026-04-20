@@ -82,6 +82,46 @@ test('Dismissing the banner persists across reloads', async ({ browser }) => {
   await context.close();
 });
 
+test('Android Install tap triggers the native prompt when available', async ({ browser }) => {
+  const { context, page } = await freshMobilePage(browser, 'android');
+  await expect(page.locator('#pwaBanner')).not.toHaveClass(/hidden/, { timeout: 5000 });
+  // Inject a fake beforeinstallprompt so the button has a deferredPrompt to drive.
+  await page.evaluate(() => {
+    const fake = new Event('beforeinstallprompt');
+    let promptCalled = 0;
+    fake.preventDefault = () => {};
+    fake.prompt = () => { promptCalled++; return Promise.resolve(); };
+    fake.userChoice = Promise.resolve({ outcome: 'accepted' });
+    window.__fakePrompt = fake;
+    window.__promptCalled = () => promptCalled;
+    window.dispatchEvent(fake);
+  });
+  // Button must now be visible + clickable
+  await expect(page.locator('#pwaInstallBannerBtn')).not.toHaveClass(/hidden/);
+  await page.click('#pwaInstallBannerBtn');
+  // prompt() should have been invoked
+  await expect.poll(() => page.evaluate(() => window.__promptCalled())).toBe(1);
+  // Accepted outcome → "Installed" toast + banner dismissed
+  await expect(page.locator('#toast:not(.hidden)')).toBeVisible();
+  await expect(page.locator('#toastMsg')).toContainText(/Installed|Instalada/);
+  await expect(page.locator('#pwaBanner')).toHaveClass(/hidden/, { timeout: 2000 });
+  await context.close();
+});
+
+test('Android Install tap without captured prompt shows a helpful toast (no silent no-op)', async ({ browser }) => {
+  const { context, page } = await freshMobilePage(browser, 'android');
+  await expect(page.locator('#pwaBanner')).not.toHaveClass(/hidden/, { timeout: 5000 });
+  // No beforeinstallprompt fired — but button must still be visible so the tap has a target
+  await expect(page.locator('#pwaInstallBannerBtn')).not.toHaveClass(/hidden/);
+  await page.click('#pwaInstallBannerBtn');
+  await expect(page.locator('#toast:not(.hidden)')).toBeVisible();
+  // Toast should guide the user to the Chrome menu fallback
+  await expect(page.locator('#toastMsg')).toContainText(/menu|menú|Install/i);
+  // Banner stays open — user hasn't completed install yet
+  await expect(page.locator('#pwaBanner')).not.toHaveClass(/hidden/);
+  await context.close();
+});
+
 test('Banner instructions re-localize on language toggle', async ({ browser }) => {
   const { context, page } = await freshMobilePage(browser, 'android');
   await expect(page.locator('#pwaBannerInstructions')).toContainText('home screen');

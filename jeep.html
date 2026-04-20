@@ -1073,6 +1073,7 @@
         pwaInstructionsAndroid: "Add to your home screen for faster access.",
         pwaInstructionsIos: "Tap the Share button, then Add to Home Screen.",
         pwaInstructionsDesktop: "Install as an app from your browser menu.",
+        pwaInstructionsAndroidManual: "Open Chrome menu (⋮) → Install app. If the option isn't there, keep using the app for a moment and try again.",
         pwaInstalled: "Installed ✓",
         savedInfoVehicle: "vehicle",
         savedInfoVehicles: "vehicles",
@@ -1388,6 +1389,7 @@
         pwaInstructionsAndroid: "Agrega a tu pantalla de inicio para acceso rápido.",
         pwaInstructionsIos: "Toca el botón Compartir, luego Agregar a la pantalla de inicio.",
         pwaInstructionsDesktop: "Instala como app desde el menú de tu navegador.",
+        pwaInstructionsAndroidManual: "Abre el menú de Chrome (⋮) → Instalar app. Si no aparece, sigue usando la app un momento y vuelve a intentar.",
         pwaInstalled: "Instalada ✓",
         savedInfoVehicle: "vehículo",
         savedInfoVehicles: "vehículos",
@@ -3226,15 +3228,18 @@ ${mods.map(m => `<tr><td>${esc(m.date)}</td><td>${esc(m.category)}</td><td>${esc
       if (platform === 'ios') {
         instr.dataset.i18n = 'pwaInstructionsIos';
         instr.textContent = t('pwaInstructionsIos');
-        btn.classList.add('hidden'); // iOS has no programmatic install
+        btn.classList.add('hidden'); // iOS has no programmatic install path
       } else if (platform === 'desktop') {
         instr.dataset.i18n = 'pwaInstructionsDesktop';
         instr.textContent = t('pwaInstructionsDesktop');
-        btn.classList.toggle('hidden', !deferredPrompt);
+        btn.classList.remove('hidden');
       } else {
         instr.dataset.i18n = 'pwaInstructionsAndroid';
         instr.textContent = t('pwaInstructionsAndroid');
-        btn.classList.toggle('hidden', !deferredPrompt);
+        // Keep the button visible even before beforeinstallprompt fires — the
+        // click handler falls back to an instructions toast so the tap always
+        // does something.
+        btn.classList.remove('hidden');
       }
     }
 
@@ -3259,18 +3264,31 @@ ${mods.map(m => `<tr><td>${esc(m.date)}</td><td>${esc(m.category)}</td><td>${esc
 
     document.getElementById('pwaCloseBtn').addEventListener('click', () => dismissPwaBanner(true));
     document.getElementById('pwaInstallBannerBtn').addEventListener('click', async () => {
+      const platform = detectPwaPlatform();
       if (!deferredPrompt) {
-        if (detectPwaPlatform() === 'ios') showToast(t('pwaInstructionsIos'), 6000);
+        // beforeinstallprompt hasn't fired (or was already consumed). Always give
+        // the user some feedback so the tap never silently no-ops.
+        if (platform === 'ios') {
+          showToast(t('pwaInstructionsIos'), 6000);
+        } else {
+          showToast(t('pwaInstructionsAndroidManual'), 7000);
+        }
         return;
       }
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      deferredPrompt = null;
-      if (outcome === 'accepted') {
-        showToast(t('pwaInstalled'));
-        dismissPwaBanner(true);
+      try {
+        await deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+          showToast(t('pwaInstalled'));
+          dismissPwaBanner(true);
+        }
+      } catch (err) {
+        // prompt() can throw if already used — fall back to the manual path
+        showToast(t('pwaInstructionsAndroidManual'), 7000);
+      } finally {
+        deferredPrompt = null;
+        refreshInstallStatus();
       }
-      refreshInstallStatus();
     });
 
     window.addEventListener('appinstalled', () => {
