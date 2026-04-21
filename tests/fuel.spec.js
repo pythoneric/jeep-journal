@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { startFresh, loadDemoSUV, switchTab } from './helpers.js';
+import { startFresh, loadDemoTruck, switchTab } from './helpers.js';
 
 test('can add a fuel entry with Total Cost', async ({ page }) => {
   await startFresh(page);
@@ -36,7 +36,7 @@ test('MPG is computed between two full-tank fills', async ({ page }) => {
 });
 
 test('$/gallon alone computes Total Cost', async ({ page }) => {
-  await loadDemoSUV(page);
+  await loadDemoTruck(page);
   await switchTab(page, 'fuel');
   await page.fill('#fDate', '2026-04-20');
   await page.fill('#fOdometer', '20000');
@@ -74,14 +74,14 @@ test('partial fill (no Full Tank) yields "— MPG" placeholder', async ({ page }
 });
 
 test('autofill populates fuel form with date + odometer', async ({ page }) => {
-  await loadDemoSUV(page);
+  await loadDemoTruck(page);
   await switchTab(page, 'fuel');
   await expect(page.locator('#fDate')).not.toHaveValue('');
   await expect(page.locator('#fOdometer')).toHaveValue('15200');
 });
 
 test('fuel search filters the list', async ({ page }) => {
-  await loadDemoSUV(page);
+  await loadDemoTruck(page);
   await switchTab(page, 'fuel');
   const total = await page.locator('#fuelList li').count();
   expect(total).toBeGreaterThan(3);
@@ -92,7 +92,7 @@ test('fuel search filters the list', async ({ page }) => {
 });
 
 test('can delete a fuel entry and undo', async ({ page }) => {
-  await loadDemoSUV(page);
+  await loadDemoTruck(page);
   await switchTab(page, 'fuel');
   page.on('dialog', (d) => d.accept());
   const before = await page.locator('#fuelList li').count();
@@ -118,7 +118,7 @@ test('fuel type + driving condition persist on entry', async ({ page }) => {
 });
 
 test('can edit a fuel entry', async ({ page }) => {
-  await loadDemoSUV(page);
+  await loadDemoTruck(page);
   await switchTab(page, 'fuel');
   // Odometer-regression warning may fire if the entry's odo is below the bumped
   // vehicle odo; auto-accept any confirm dialog.

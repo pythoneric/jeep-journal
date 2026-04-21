@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { startFresh, loadDemoSUV, switchTab } from './helpers.js';
+import { startFresh, loadDemoTruck, switchTab } from './helpers.js';
 
 test('Service Reminders card renders above the Vehicle card', async ({ page }) => {
   await startFresh(page);
@@ -11,18 +11,18 @@ test('Service Reminders card renders above the Vehicle card', async ({ page }) =
 });
 
 test('Vehicle card shows color, plate, VIN last-4 and purchase date', async ({ page }) => {
-  await loadDemoSUV(page);
+  await loadDemoTruck(page);
   await switchTab(page, 'dashboard');
   // There can be multiple .vehicle-meta rows (identity + drivetrain specs); combine them.
   const meta = (await page.locator('#vehicleCard .vehicle-meta').allTextContents()).join(' ');
-  expect(meta).toContain('Orange'); // color
+  expect(meta).toContain('Gray'); // color
   expect(meta).toContain('DEMO1'); // plate
-  expect(meta).toContain('G123'); // vin last-4
-  expect(meta).toMatch(/2023-01-01/); // purchase date
+  expect(meta).toContain('D123'); // vin last-4 (DEMGLAD123 → D123)
+  expect(meta).toMatch(/2023-03-01/); // purchase date
 });
 
 test('TCO + split $/mile cards render with demo data', async ({ page }) => {
-  await loadDemoSUV(page);
+  await loadDemoTruck(page);
   await switchTab(page, 'dashboard');
   await expect(page.locator('#tcoCard')).toContainText(/\$/);
   await expect(page.locator('#cpmMaintCard')).toContainText(/\$|mile|milla/);
@@ -30,22 +30,22 @@ test('TCO + split $/mile cards render with demo data', async ({ page }) => {
 });
 
 test('Monthly trend chart canvas is present', async ({ page }) => {
-  await loadDemoSUV(page);
+  await loadDemoTruck(page);
   await switchTab(page, 'dashboard');
   await expect(page.locator('#monthlyChart')).toBeVisible();
 });
 
 test('Budget card header adapts to what is configured', async ({ page }) => {
-  await loadDemoSUV(page);
+  await loadDemoTruck(page);
   await switchTab(page, 'dashboard');
-  // Demo SUV seeds both monthlyBudget and annualBudget → "Budget"
+  // Demo Truck seeds both monthlyBudget and annualBudget → "Budget"
   await expect(page.locator('#budgetCardTitle')).toHaveText(/Budget|Presupuesto/);
 });
 
 test('MPG vs Goal card shows delta', async ({ page }) => {
-  await loadDemoSUV(page);
+  await loadDemoTruck(page);
   await switchTab(page, 'dashboard');
-  // Demo SUV has mpgGoal: 18 and several fuel entries computing to ~19 MPG
+  // Demo Truck has mpgGoal: 18 and several fuel entries computing to ~19 MPG
   await expect(page.locator('#mpgGoalCard')).toContainText(/goal|meta/i);
 });
 
@@ -58,14 +58,14 @@ test('dashboard recent lists show empty states on fresh install', async ({ page 
 });
 
 test('vehicle value card reflects purchase price + depreciation', async ({ page }) => {
-  await loadDemoSUV(page);
+  await loadDemoTruck(page);
   await switchTab(page, 'dashboard');
   await expect(page.locator('#vehicleValueCard')).toContainText(/\$/);
   await expect(page.locator('#vehicleValueCard')).toContainText(/depreciation|depreciación/i);
 });
 
 test('cost breakdown pie chart is present', async ({ page }) => {
-  await loadDemoSUV(page);
+  await loadDemoTruck(page);
   await switchTab(page, 'dashboard');
   await expect(page.locator('#costChart')).toBeVisible();
 });

@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { startFresh, loadDemoSUV, switchTab, useOilTemplate } from './helpers.js';
+import { startFresh, loadDemoTruck, switchTab, useOilTemplate } from './helpers.js';
 
 test('can add a maintenance entry and see it in the history', async ({ page }) => {
   await startFresh(page);
@@ -33,15 +33,15 @@ test('"Specify if Other" field is hidden unless Other selected', async ({ page }
 });
 
 test('date + odometer auto-fill when tab opens', async ({ page }) => {
-  await loadDemoSUV(page);
+  await loadDemoTruck(page);
   await switchTab(page, 'maintenance');
   await expect(page.locator('#mDate')).not.toHaveValue('');
-  // Demo Wrangler odometer is 15200
+  // Demo Gladiator odometer is 15200
   await expect(page.locator('#mOdometer')).toHaveValue('15200');
 });
 
 test('can edit a maintenance entry inline', async ({ page }) => {
-  await loadDemoSUV(page);
+  await loadDemoTruck(page);
   await switchTab(page, 'maintenance');
   await page.locator('#maintenanceList .edit-btn').first().click();
   await expect(page.locator('#maintenanceForm .edit-banner')).toBeVisible();
@@ -52,7 +52,7 @@ test('can edit a maintenance entry inline', async ({ page }) => {
 });
 
 test('Escape cancels maintenance edit mode', async ({ page }) => {
-  await loadDemoSUV(page);
+  await loadDemoTruck(page);
   await switchTab(page, 'maintenance');
   await page.locator('#maintenanceList .edit-btn').first().click();
   await expect(page.locator('#maintenanceForm .edit-banner')).toBeVisible();
@@ -62,7 +62,7 @@ test('Escape cancels maintenance edit mode', async ({ page }) => {
 });
 
 test('can delete a maintenance entry and undo via toast', async ({ page }) => {
-  await loadDemoSUV(page);
+  await loadDemoTruck(page);
   await switchTab(page, 'maintenance');
   page.on('dialog', (d) => d.accept());
   const before = await page.locator('#maintenanceList li').count();
@@ -74,7 +74,7 @@ test('can delete a maintenance entry and undo via toast', async ({ page }) => {
 });
 
 test('search filters the maintenance history', async ({ page }) => {
-  await loadDemoSUV(page);
+  await loadDemoTruck(page);
   await switchTab(page, 'maintenance');
   const total = await page.locator('#maintenanceList li').count();
   expect(total).toBeGreaterThan(1);
@@ -87,7 +87,7 @@ test('search filters the maintenance history', async ({ page }) => {
 });
 
 test('odometer regression warns with confirm dialog', async ({ page }) => {
-  await loadDemoSUV(page);
+  await loadDemoTruck(page);
   await switchTab(page, 'maintenance');
   const dialogs = [];
   page.on('dialog', (d) => {
@@ -103,7 +103,7 @@ test('odometer regression warns with confirm dialog', async ({ page }) => {
 });
 
 test('saving a higher odometer bumps the vehicle odometer', async ({ page }) => {
-  await loadDemoSUV(page);
+  await loadDemoTruck(page);
   await switchTab(page, 'maintenance');
   await page.fill('#mDate', '2026-01-01');
   await page.fill('#mOdometer', '99999');
@@ -139,7 +139,7 @@ test('duplicate entry warns before saving', async ({ page }) => {
 });
 
 test('print service report opens a new window with totals', async ({ page, context }) => {
-  await loadDemoSUV(page);
+  await loadDemoTruck(page);
   await switchTab(page, 'maintenance');
   const [report] = await Promise.all([context.waitForEvent('page'), page.click('#reportBtn')]);
   await expect(report.locator('h1')).toContainText(/Service History|Historial/);

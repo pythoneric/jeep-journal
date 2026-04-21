@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { startFresh, loadDemoSUV, switchTab } from './helpers.js';
+import { startFresh, switchTab } from './helpers.js';
 
 test('"?" opens the keyboard shortcuts modal; Escape closes it', async ({ page }) => {
   await startFresh(page);

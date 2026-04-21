@@ -1,20 +1,39 @@
 import { test, expect } from '@playwright/test';
-import { openLoader, startFresh, loadDemoSUV } from './helpers.js';
+import { openLoader, startFresh, loadDemoTruck } from './helpers.js';
 
 test('Saved-data banner lists counts after using the app', async ({ page }) => {
-  await loadDemoSUV(page);
+  await loadDemoTruck(page);
   await page.click('#refreshBtn');
   await expect(page.locator('#savedDataBanner')).toBeVisible();
   const info = (await page.textContent('#savedDataInfo'))?.trim();
   expect(info).toMatch(/vehicle/i);
-  // Demo SUV ships with maintenance, fuel, and mods
+  // Demo Truck ships with maintenance, fuel, and mods
   expect(info).toMatch(/maintenance/i);
   expect(info).toMatch(/fuel/i);
   expect(info).toMatch(/mods/i);
+  expect(info).toMatch(/parts/i);
+});
+
+test('Demo Truck seeds parts, trails, and a reminder alongside maintenance/fuel/mods', async ({ page }) => {
+  await loadDemoTruck(page);
+  // Parts inventory
+  await page.locator('[data-tab="parts"]').click();
+  await expect(page.locator('#parts:not(.hidden)')).toBeVisible();
+  const partsCount = await page.locator('#partsList li').count();
+  expect(partsCount).toBeGreaterThanOrEqual(5);
+  // Trail journal
+  await page.locator('[data-tab="trails"]').click();
+  await expect(page.locator('#trails:not(.hidden)')).toBeVisible();
+  const trailsCount = await page.locator('#trailsList li').count();
+  expect(trailsCount).toBeGreaterThanOrEqual(3);
+  // One seeded maintenance row has nextDueMiles/nextDueDate → a reminder surfaces
+  // on the dashboard so users immediately see the feature.
+  await page.locator('[data-tab="dashboard"]').click();
+  await expect(page.locator('#serviceReminders li').first()).not.toContainText(/No upcoming|Sin próximos/i);
 });
 
 test('Export button downloads a backup from the loader', async ({ page, context }) => {
-  await loadDemoSUV(page);
+  await loadDemoTruck(page);
   await page.click('#refreshBtn');
   await expect(page.locator('#exportLoaderBtn')).toBeVisible();
   const [download] = await Promise.all([
@@ -25,7 +44,7 @@ test('Export button downloads a backup from the loader', async ({ page, context 
 });
 
 test('Delete button wipes saved data + hides the banner', async ({ page }) => {
-  await loadDemoSUV(page);
+  await loadDemoTruck(page);
   await page.click('#refreshBtn');
   await expect(page.locator('#savedDataBanner')).toBeVisible();
   page.on('dialog', (d) => d.accept());

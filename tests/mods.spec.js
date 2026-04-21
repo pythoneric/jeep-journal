@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { startFresh, loadDemoSUV, switchTab } from './helpers.js';
+import { startFresh, loadDemoTruck, switchTab } from './helpers.js';
 
 test('can add a mod entry', async ({ page }) => {
   await startFresh(page);
@@ -34,7 +34,7 @@ test('Removed-on date appears only when "Still Installed" is unchecked', async (
 });
 
 test('mods list groups by category and shows totals', async ({ page }) => {
-  await loadDemoSUV(page);
+  await loadDemoTruck(page);
   await switchTab(page, 'mods');
   // Demo has Suspension, Tires/Wheels, Armor, Lighting, Recovery, Interior, Electrical
   await expect(page.locator('#modsList h3').first()).toBeVisible();
@@ -42,7 +42,7 @@ test('mods list groups by category and shows totals', async ({ page }) => {
 });
 
 test('mods search filters and shows empty state on no match', async ({ page }) => {
-  await loadDemoSUV(page);
+  await loadDemoTruck(page);
   await switchTab(page, 'mods');
   await page.fill('#modsSearch', 'lift');
   await expect(page.locator('#modsList')).toContainText(/lift/i);
@@ -51,7 +51,7 @@ test('mods search filters and shows empty state on no match', async ({ page }) =
 });
 
 test('can edit a mod entry', async ({ page }) => {
-  await loadDemoSUV(page);
+  await loadDemoTruck(page);
   await switchTab(page, 'mods');
   await page.locator('#modsList .edit-btn').first().click();
   await expect(page.locator('#modsForm .edit-banner')).toBeVisible();
@@ -61,7 +61,7 @@ test('can edit a mod entry', async ({ page }) => {
 });
 
 test('can delete a mod (with undo)', async ({ page }) => {
-  await loadDemoSUV(page);
+  await loadDemoTruck(page);
   await switchTab(page, 'mods');
   page.on('dialog', (d) => d.accept());
   const before = await page.locator('#modsList .del-btn').count();

@@ -37,12 +37,6 @@ export async function startFresh(page) {
   await page.waitForFunction(() => document.querySelectorAll('#vehicleSwitcher .vehicle-chip').length > 0);
 }
 
-export async function loadDemoSUV(page) {
-  await openLoader(page);
-  await page.click('#demoSUVBtn');
-  await page.waitForSelector('#loader', { state: 'hidden', timeout: 10000 });
-}
-
 export async function loadDemoTruck(page) {
   await openLoader(page);
   await page.click('#demoTruckBtn');

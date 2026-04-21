@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { startFresh, loadDemoSUV, switchTab } from './helpers.js';
+import { startFresh, switchTab } from './helpers.js';
 
 test('Trails tab shows empty state when no trail runs logged', async ({ page }) => {
   await startFresh(page);

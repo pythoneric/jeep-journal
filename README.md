@@ -13,7 +13,7 @@ Personal journal for Jeep Wrangler and Gladiator vehicles. Tracks maintenance, f
 When you open the app, the loader offers four ways to begin:
 
 - **Start Fresh** — clears any saved data and drops you on the Add Vehicle form to enter your own rig (brand, model, year, odometer, etc.).
-- **Demo SUV / Demo Truck** — seeds a sample Wrangler or Gladiator with maintenance, fuel, mods, and trail history so you can explore.
+- **Demo Truck** — seeds a sample Gladiator with maintenance, fuel, mods, parts, and trail history so you can explore every tab.
 - **Import .json** — restore a previously exported backup (drag-and-drop or tap to pick).
 - **Continue** — resume where you left off (shown once you have saved data).
 
@@ -59,7 +59,7 @@ Diario personal para vehículos Jeep Wrangler y Gladiator. Rastrea mantenimiento
 La pantalla inicial ofrece cuatro formas de comenzar:
 
 - **Empezar Fresco** — borra los datos guardados y te lleva al formulario "Agregar Vehículo" para ingresar tu propio vehículo (marca, modelo, año, odómetro, etc.).
-- **SUV Demo / Camioneta Demo** — carga un Wrangler o Gladiator de ejemplo con historial de mantenimiento, combustible, modificaciones y recorridos.
+- **Camioneta Demo** — carga un Gladiator de ejemplo con historial de mantenimiento, combustible, modificaciones, partes y recorridos para que puedas explorar cada pestaña.
 - **Importar .json** — restaura una copia de seguridad exportada previamente (arrastra o toca para elegir).
 - **Continuar** — retoma donde lo dejaste (aparece cuando hay datos guardados).
 

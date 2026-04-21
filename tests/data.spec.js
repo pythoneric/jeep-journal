@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { startFresh, loadDemoSUV, switchTab } from './helpers.js';
+import { startFresh, loadDemoTruck, switchTab } from './helpers.js';
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
@@ -11,18 +11,18 @@ function tmpWrite(filename, content) {
 }
 
 test('JSON export uses vehicle nickname + date in filename', async ({ page }) => {
-  await loadDemoSUV(page);
+  await loadDemoTruck(page);
   await switchTab(page, 'settings');
   const [download] = await Promise.all([
     page.waitForEvent('download'),
     page.click('#exportBtn'),
   ]);
   const name = download.suggestedFilename();
-  expect(name).toMatch(/^biteric-jeep-wrangler-demo-\d{4}-\d{2}-\d{2}\.json$/);
+  expect(name).toMatch(/^biteric-jeep-gladiator-demo-\d{4}-\d{2}-\d{2}\.json$/);
 });
 
 test('invalid JSON import shows toast and does not wipe data', async ({ page }) => {
-  await loadDemoSUV(page);
+  await loadDemoTruck(page);
   const before = await page.locator('#vehicleSwitcher .vehicle-chip').count();
   const bad = tmpWrite('invalid.json', JSON.stringify({ vehicles: 'not-an-array' }));
   await switchTab(page, 'settings');

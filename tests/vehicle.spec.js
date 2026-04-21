@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { openLoader, startFresh, loadDemoSUV, switchTab } from './helpers.js';
+import { openLoader, startFresh, loadDemoTruck, switchTab } from './helpers.js';
 
 test('can add a new vehicle', async ({ page }) => {
   await startFresh(page);
@@ -13,15 +13,15 @@ test('can add a new vehicle', async ({ page }) => {
 });
 
 test('Edit Active Vehicle form is populated with active vehicle data', async ({ page }) => {
-  await loadDemoSUV(page);
+  await loadDemoTruck(page);
   await switchTab(page, 'settings');
-  await expect(page.locator('#eNickname')).toHaveValue('Wrangler Demo');
+  await expect(page.locator('#eNickname')).toHaveValue('Gladiator Demo');
   await expect(page.locator('#eMake')).toHaveValue('Jeep');
-  await expect(page.locator('#eModel')).toHaveValue('Wrangler');
+  await expect(page.locator('#eModel')).toHaveValue('Gladiator');
 });
 
 test('editing and saving a vehicle updates the selector', async ({ page }) => {
-  await loadDemoSUV(page);
+  await loadDemoTruck(page);
   await switchTab(page, 'settings');
   await page.fill('#eNickname', 'Renamed Jeep');
   await page.click('#editVehicleForm button[type="submit"]');
@@ -30,7 +30,7 @@ test('editing and saving a vehicle updates the selector', async ({ page }) => {
 });
 
 test('setting manual value override overrides depreciation math', async ({ page }) => {
-  await loadDemoSUV(page);
+  await loadDemoTruck(page);
   await switchTab(page, 'settings');
   await page.fill('#eManualValue', '25000');
   await page.click('#editVehicleForm button[type="submit"]');
@@ -40,7 +40,7 @@ test('setting manual value override overrides depreciation math', async ({ page 
 });
 
 test('delete active vehicle cascades to maintenance/fuel/mods/parts', async ({ page }) => {
-  await loadDemoSUV(page);
+  await loadDemoTruck(page);
   await switchTab(page, 'maintenance');
   const maintBefore = await page.locator('#maintenanceList li').count();
   expect(maintBefore).toBeGreaterThan(0);
@@ -67,16 +67,16 @@ test('severe-service toggle halves template intervals', async ({ page }) => {
 });
 
 test('drivetrain specs show on the dashboard vehicle card', async ({ page }) => {
-  await loadDemoSUV(page);
+  await loadDemoTruck(page);
   await switchTab(page, 'dashboard');
   const card = await page.textContent('#vehicleCard');
-  expect(card).toContain('3.6L Pentastar');
-  expect(card).toContain('4.10');
-  expect(card).toContain('35x12.50R17');
+  expect(card).toContain('3.0L EcoDiesel');
+  expect(card).toContain('3.73');
+  expect(card).toContain('33x12.50R17');
 });
 
 test('severe-service badge appears when toggled', async ({ page }) => {
-  await loadDemoSUV(page);
+  await loadDemoTruck(page);
   await switchTab(page, 'dashboard');
   await expect(page.locator('#vehicleCard .severe-service-badge')).toBeVisible();
 });
@@ -96,14 +96,14 @@ test('per-vehicle goals drive dashboard cards', async ({ page }) => {
 });
 
 test('vehicle switcher renders a car icon and one chip per vehicle', async ({ page }) => {
-  await loadDemoSUV(page);
+  await loadDemoTruck(page);
   await expect(page.locator('#vehicleSwitcher .vehicle-switcher-icon')).toHaveText('🚗');
   await expect(page.locator('#vehicleSwitcher .vehicle-chip')).toHaveCount(1);
-  await expect(page.locator('#vehicleSwitcher .vehicle-chip.active')).toHaveText('Wrangler Demo');
+  await expect(page.locator('#vehicleSwitcher .vehicle-chip.active')).toHaveText('Gladiator Demo');
 });
 
 test('adding a second vehicle appends a second chip without changing the active one', async ({ page }) => {
-  await loadDemoSUV(page);
+  await loadDemoTruck(page);
   await switchTab(page, 'settings');
   await page.fill('#vNickname', 'Second Rig');
   await page.fill('#vMake', 'Jeep');
@@ -113,11 +113,11 @@ test('adding a second vehicle appends a second chip without changing the active 
   await expect(page.locator('#vehicleSwitcher .vehicle-chip')).toHaveCount(2);
   await expect(page.locator('#vehicleSwitcher')).toContainText('Second Rig');
   // Active chip stays on the original demo vehicle
-  await expect(page.locator('#vehicleSwitcher .vehicle-chip.active')).toHaveText('Wrangler Demo');
+  await expect(page.locator('#vehicleSwitcher .vehicle-chip.active')).toHaveText('Gladiator Demo');
 });
 
 test('clicking a chip switches the active vehicle and updates the dashboard', async ({ page }) => {
-  await loadDemoSUV(page);
+  await loadDemoTruck(page);
   await switchTab(page, 'settings');
   await page.fill('#vNickname', 'Bronco Daily');
   await page.fill('#vMake', 'Ford');
@@ -125,7 +125,7 @@ test('clicking a chip switches the active vehicle and updates the dashboard', as
   await page.fill('#vYear', '2023');
   await page.click('#vehicleForm button[type="submit"]');
   await switchTab(page, 'dashboard');
-  await expect(page.locator('#vehicleCard')).toContainText('Wrangler');
+  await expect(page.locator('#vehicleCard')).toContainText('Gladiator');
   await page.locator('#vehicleSwitcher .vehicle-chip', { hasText: 'Bronco Daily' }).click();
   await expect(page.locator('#vehicleSwitcher .vehicle-chip.active')).toHaveText('Bronco Daily');
   await expect(page.locator('#vehicleSwitcher .vehicle-chip.active')).toHaveAttribute('aria-checked', 'true');

@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { startFresh, loadDemoSUV, switchTab } from './helpers.js';
+import { startFresh, loadDemoTruck, switchTab } from './helpers.js';
 
 async function switchToSpanish(page) {
   await startFresh(page);
@@ -128,9 +128,9 @@ test.describe('Dynamic content re-renders when language is toggled', () => {
   });
 
   test('Budget card title re-renders after language toggle (stateful cell)', async ({ page }) => {
-    await loadDemoSUV(page);
+    await loadDemoTruck(page);
     await switchTab(page, 'dashboard');
-    // Demo SUV has both month + year budgets set; title should be "Budget" / "Presupuesto".
+    // Demo Truck has both month + year budgets set; title should be "Budget" / "Presupuesto".
     // Use toHaveText (polls) — setLang runs a sync data-i18n sweep first, then triggers
     // an async loadDashboard re-render that computes the correct "both-budgets" label.
     await expect(page.locator('#budgetCardTitle')).toHaveText('Budget');
