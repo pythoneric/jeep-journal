@@ -1110,7 +1110,14 @@
         savedInfoMods: "mods",
         savedInfoParts: "parts",
         confirmDeleteSaved: "Delete all saved data? This cannot be undone.",
-        exportedBackup: "Backup downloaded."
+        exportedBackup: "Backup downloaded.",
+        noUpcomingReminders: "No upcoming service reminders",
+        vehicleBought: "Bought",
+        vehiclePlate: "Plate",
+        axleRatioSuffix: "gears",
+        liftHeightSuffix: "lift",
+        depreciationFrom: "from",
+        remindersTruncated: "+{n} more"
       },
       es: {
         appTitle: "BitEric Jeep",
@@ -1425,7 +1432,14 @@
         savedInfoMods: "mods",
         savedInfoParts: "piezas",
         confirmDeleteSaved: "¿Eliminar todos los datos guardados? No se puede deshacer.",
-        exportedBackup: "Respaldo descargado."
+        exportedBackup: "Respaldo descargado.",
+        noUpcomingReminders: "Sin recordatorios próximos",
+        vehicleBought: "Comprado",
+        vehiclePlate: "Placa",
+        axleRatioSuffix: "relación",
+        liftHeightSuffix: "elevación",
+        depreciationFrom: "desde",
+        remindersTruncated: "+{n} más"
       }
     };
 
@@ -1730,21 +1744,25 @@
       if (!vehicle) return;
       const metaBits = [];
       if (vehicle.color) metaBits.push(`<span>${escHtml(vehicle.color)}</span>`);
-      if (vehicle.plate) metaBits.push(`<span>Plate ${escHtml(vehicle.plate)}</span>`);
+      if (vehicle.plate) metaBits.push(`<span>${t('vehiclePlate')} ${escHtml(vehicle.plate)}</span>`);
       if (vehicle.vin) metaBits.push(`<span>VIN …${escHtml(vehicle.vin.slice(-4))}</span>`);
-      if (vehicle.purchaseDate) metaBits.push(`<span>Bought ${escHtml(vehicle.purchaseDate)}</span>`);
+      if (vehicle.purchaseDate) metaBits.push(`<span>${t('vehicleBought')} ${escHtml(vehicle.purchaseDate)}</span>`);
       const specBits = [];
       if (vehicle.engine) specBits.push(`<span>${escHtml(vehicle.engine)}</span>`);
       if (vehicle.transmission) specBits.push(`<span>${escHtml(vehicle.transmission)}</span>`);
-      if (vehicle.axleRatio) specBits.push(`<span>${escHtml(vehicle.axleRatio)} gears</span>`);
+      if (vehicle.axleRatio) specBits.push(`<span>${escHtml(vehicle.axleRatio)} ${t('axleRatioSuffix')}</span>`);
       if (vehicle.tireSize) specBits.push(`<span>${escHtml(vehicle.tireSize)}</span>`);
-      if (vehicle.liftHeight) specBits.push(`<span>${escHtml(vehicle.liftHeight)} lift</span>`);
+      if (vehicle.liftHeight) specBits.push(`<span>${escHtml(vehicle.liftHeight)} ${t('liftHeightSuffix')}</span>`);
       if (vehicle.transferCase) specBits.push(`<span>${escHtml(vehicle.transferCase)}</span>`);
-      const badge = vehicle.severeService ? `<span class="severe-service-badge" title="Severe service">${t('severeServiceBadge')}</span>` : '';
+      const badge = vehicle.severeService ? `<span class="severe-service-badge" title="${escHtml(t('severeService'))}">${t('severeServiceBadge')}</span>` : '';
+      const title = [vehicle.year, vehicle.make, vehicle.model, vehicle.trim].filter(Boolean).map(escHtml).join(' ');
+      const odoLine = Number.isFinite(+vehicle.odometer) && +vehicle.odometer > 0
+        ? `<p>${t('reportOdometer')}: ${escHtml(vehicle.odometer)} mi</p>`
+        : '';
       document.getElementById('vehicleCard').innerHTML = `
         <p><strong>${escHtml(vehicle.nickname)}</strong>${badge}</p>
-        <p>${escHtml(vehicle.year)} ${escHtml(vehicle.make)} ${escHtml(vehicle.model)} ${escHtml(vehicle.trim || '')}</p>
-        <p>Odometer: ${escHtml(vehicle.odometer)} mi</p>
+        <p>${title}</p>
+        ${odoLine}
         ${metaBits.length ? `<p class="vehicle-meta">${metaBits.join('')}</p>` : ''}
         ${specBits.length ? `<p class="vehicle-meta">${specBits.join('')}</p>` : ''}
       `;
@@ -1778,7 +1796,15 @@
         }
         return severity ? { m, severity, milesLabel, dateLabel } : null;
       }).filter(Boolean);
-      const active = reminders.filter(r => r.severity !== 'upcoming').concat(reminders.filter(r => r.severity === 'upcoming').slice(0, 3));
+      const pressing = reminders.filter(r => r.severity !== 'upcoming');
+      const upcoming = reminders.filter(r => r.severity === 'upcoming').slice(0, 3);
+      const combined = pressing.concat(upcoming);
+      const CAP = 10;
+      const active = combined.slice(0, CAP);
+      const overflow = combined.length - active.length;
+      const overflowLi = overflow > 0
+        ? `<li class="reminder-item reminder-more">${escHtml(t('remindersTruncated').replace('{n}', overflow))}</li>`
+        : '';
       document.getElementById('serviceReminders').innerHTML = active.length > 0
         ? active.map(r => {
             const tag = r.severity === 'overdue' ? ` (${t('overdue')})` : r.severity === 'due-soon' ? ` (${t('dueSoon')})` : '';
@@ -1788,8 +1814,8 @@
                 <button type="button" class="reminder-btn reminder-dismiss" data-id="${r.m.id}">${escHtml(t('dismissBtn'))}</button>
               </span>
             </li>`;
-          }).join('')
-        : '<li>No upcoming service reminders</li>';
+          }).join('') + overflowLi
+        : `<li>${escHtml(t('noUpcomingReminders'))}</li>`;
 
       // Budget card (this month + year)
       const monthKey = currentDate.slice(0, 7);
@@ -1859,7 +1885,7 @@
           valueCard.innerHTML = `
             <div class="stat-big">$${Math.round(value).toLocaleString()}</div>
             <div class="stat-delta negative">-$${Math.round(loss).toLocaleString()} ${t('depreciation')}</div>
-            <div class="stat-sub">${pct.toFixed(0)}% from $${vehicle.purchasePrice.toLocaleString()}</div>
+            <div class="stat-sub">${pct.toFixed(0)}% ${t('depreciationFrom')} $${vehicle.purchasePrice.toLocaleString()}</div>
           `;
         }
       } else {
@@ -1874,7 +1900,7 @@
       // Recent fuel
       const recentFuel = [...allFuel].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
       document.getElementById('recentFuel').innerHTML = recentFuel.length
-        ? recentFuel.map(f => `<li>${escHtml(f.date)}: ${f.gallons} gal - $${f.cost.toFixed(2)}</li>`).join('')
+        ? recentFuel.map(f => `<li>${escHtml(f.date)}: ${f.gallons} gal - $${(f.cost || 0).toFixed(2)}</li>`).join('')
         : `<li class="empty-state">${t('noRecentFuel')}</li>`;
       // Top mods
       const topMods = allMods.filter(m => m.installed).sort((a, b) => b.cost - a.cost).slice(0, 3);
@@ -1927,9 +1953,9 @@
         data: {
           labels,
           datasets: [
-            { label: 'Maintenance', data: maintSeries, backgroundColor: '#d97706' },
-            { label: 'Fuel', data: fuelSeries, backgroundColor: '#f59e0b' },
-            { label: 'Mods', data: modsSeries, backgroundColor: '#fbbf24' }
+            { label: t('tcoMaintenance'), data: maintSeries, backgroundColor: '#d97706' },
+            { label: t('tcoFuel'), data: fuelSeries, backgroundColor: '#f59e0b' },
+            { label: t('tcoMods'), data: modsSeries, backgroundColor: '#fbbf24' }
           ]
         },
         options: { responsive: true, scales: { x: { stacked: true }, y: { stacked: true } } }
@@ -1938,7 +1964,7 @@
       costChartInstance = new Chart(document.getElementById('costChart'), {
         type: 'pie',
         data: {
-          labels: ['Maintenance', 'Fuel', 'Mods'],
+          labels: [t('tcoMaintenance'), t('tcoFuel'), t('tcoMods')],
           datasets: [{ data: [maintCost, fuelCost, modCost], backgroundColor: ['#d97706', '#f59e0b', '#fbbf24'] }]
         }
       });

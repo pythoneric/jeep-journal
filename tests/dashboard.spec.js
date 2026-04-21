@@ -69,3 +69,82 @@ test('cost breakdown pie chart is present', async ({ page }) => {
   await switchTab(page, 'dashboard');
   await expect(page.locator('#costChart')).toBeVisible();
 });
+
+test('severe-service badge renders for demo truck', async ({ page }) => {
+  await loadDemoTruck(page);
+  await switchTab(page, 'dashboard');
+  await expect(page.locator('#vehicleCard .severe-service-badge')).toBeVisible();
+  await expect(page.locator('#vehicleCard .severe-service-badge')).toHaveText(/SEVERE|SEVERO/);
+});
+
+test('vehicle spec row renders engine / tire / lift when set', async ({ page }) => {
+  await loadDemoTruck(page);
+  await switchTab(page, 'dashboard');
+  const meta = (await page.locator('#vehicleCard .vehicle-meta').allTextContents()).join(' ');
+  expect(meta).toContain('3.0L EcoDiesel'); // engine
+  expect(meta).toContain('Auto 8-speed'); // transmission
+  expect(meta).toContain('3.73'); // axle ratio
+  expect(meta).toContain('33x12.50R17'); // tire size
+  expect(meta).toContain('2.5"'); // lift height
+  expect(meta).toContain('Rock-Trac'); // transfer case
+});
+
+test('vehicle title has no trailing space when trim is empty', async ({ page }) => {
+  await startFresh(page); // helpers' Test Rig has no trim
+  await switchTab(page, 'dashboard');
+  const title = await page.locator('#vehicleCard p').nth(1).textContent();
+  expect(title).toBe('2020 Jeep Wrangler');
+});
+
+test('odometer line is hidden when vehicle odometer is zero', async ({ page }) => {
+  await startFresh(page);
+  await switchTab(page, 'dashboard');
+  // startFresh vehicle is created with no odometer (defaults to 0/empty),
+  // so the "Odometer: X mi" paragraph should be suppressed entirely.
+  const body = await page.locator('#vehicleCard').textContent();
+  expect(body).not.toMatch(/Odometer/i);
+  expect(body).not.toMatch(/Odómetro/i);
+});
+
+test('recent lists render populated rows for demo truck', async ({ page }) => {
+  await loadDemoTruck(page);
+  await switchTab(page, 'dashboard');
+  // Each list: "YYYY-MM-DD: <thing> - $N.NN" format
+  const rowPattern = /\d{4}-\d{2}-\d{2}: .+ - \$\d+\.\d{2}/;
+  await expect(page.locator('#recentMaintenance li').first()).toHaveText(rowPattern);
+  await expect(page.locator('#recentFuel li').first()).toHaveText(/\d{4}-\d{2}-\d{2}: [\d.]+ gal - \$\d+\.\d{2}/);
+  await expect(page.locator('#topMods li').first()).toHaveText(/.+: \$\d+\.\d{2}/);
+  // Recent lists are capped at 5 rows.
+  expect(await page.locator('#recentMaintenance li').count()).toBeLessThanOrEqual(5);
+  expect(await page.locator('#recentFuel li').count()).toBeLessThanOrEqual(5);
+  expect(await page.locator('#topMods li').count()).toBeLessThanOrEqual(3);
+});
+
+test('TCO subline shows Maintenance / Fuel / Mods breakdown', async ({ page }) => {
+  await loadDemoTruck(page);
+  await switchTab(page, 'dashboard');
+  const tco = await page.locator('#tcoCard').textContent();
+  // Both EN ("Maintenance $... Fuel $... Mods $...") and ES ("Mantenimiento ... Combustible ... Mods ...")
+  // reach the same numeric layout; assert three $-amounts under the big total.
+  expect(tco.match(/\$\d/g)?.length).toBeGreaterThanOrEqual(4); // 1 total + 3 breakdown
+});
+
+test('fresh-install dashboard shows all configurable empty states', async ({ page }) => {
+  await startFresh(page);
+  await switchTab(page, 'dashboard');
+  await expect(page.locator('#budgetMonthCard')).toContainText(/budget|presupuesto/i);
+  await expect(page.locator('#mpgGoalCard')).toContainText(/goal|meta/i);
+  await expect(page.locator('#vehicleValueCard')).toContainText(/purchase|precio/i);
+  await expect(page.locator('#cpmMaintCard')).toContainText(/fuel entry|combustible/i);
+  await expect(page.locator('#cpmFuelCard')).toContainText(/fuel entry|combustible/i);
+});
+
+test('Vehicle card i18n: Plate / Bought labels follow language toggle', async ({ page }) => {
+  await loadDemoTruck(page);
+  await switchTab(page, 'dashboard');
+  await expect(page.locator('#vehicleCard')).toContainText('Plate DEMO1');
+  await expect(page.locator('#vehicleCard')).toContainText('Bought 2023-03-01');
+  await page.click('#langToggle');
+  await expect(page.locator('#vehicleCard')).toContainText('Placa DEMO1');
+  await expect(page.locator('#vehicleCard')).toContainText('Comprado 2023-03-01');
+});

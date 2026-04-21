@@ -29,7 +29,7 @@ test('Demo Truck seeds parts, trails, and a reminder alongside maintenance/fuel/
   // One seeded maintenance row has nextDueMiles/nextDueDate → a reminder surfaces
   // on the dashboard so users immediately see the feature.
   await page.locator('[data-tab="dashboard"]').click();
-  await expect(page.locator('#serviceReminders li').first()).not.toContainText(/No upcoming|Sin próximos/i);
+  await expect(page.locator('#serviceReminders li').first()).not.toContainText(/No upcoming|Sin recordatorios/i);
 });
 
 test('Export button downloads a backup from the loader', async ({ page, context }) => {

@@ -121,10 +121,9 @@ test.describe('Dynamic content re-renders when language is toggled', () => {
     await switchTab(page, 'dashboard');
     await expect(page.locator('#serviceReminders')).toContainText('No upcoming service reminders');
     await page.click('#langToggle');
-    // Spanish placeholder uses the same English sentence currently? Verify by switching
-    // back and forth — the important thing is that the renderer re-ran (no raw keys).
+    await expect(page.locator('#serviceReminders')).toContainText('Sin recordatorios próximos');
     const txt = await page.textContent('#serviceReminders');
-    expect(txt).not.toMatch(/\b(overdue|dueSoon|snoozeBtn|dismissBtn)\b/);
+    expect(txt).not.toMatch(/\b(overdue|dueSoon|snoozeBtn|dismissBtn|noUpcomingReminders)\b/);
   });
 
   test('Budget card title re-renders after language toggle (stateful cell)', async ({ page }) => {
