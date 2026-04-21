@@ -99,6 +99,43 @@ test('light theme keeps header + tabs readable (regression)', async ({ page }) =
   expect(colors.tabVsTabs).toBeGreaterThan(1.8);
 });
 
+test('tabs dock to the bottom of the viewport at mobile widths', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 667 });
+  await startFresh(page);
+  const { navBottom, navTop, viewportHeight, position } = await page.evaluate(() => {
+    const nav = document.querySelector('nav.tabs');
+    const r = nav.getBoundingClientRect();
+    return {
+      navBottom: r.bottom,
+      navTop: r.top,
+      viewportHeight: window.innerHeight,
+      position: getComputedStyle(nav).position,
+    };
+  });
+  expect(position).toBe('fixed');
+  // Nav should sit at the bottom edge (within 1px for safe-area rounding) and
+  // occupy the lower half of the screen, not the top.
+  expect(navBottom).toBeGreaterThanOrEqual(viewportHeight - 1);
+  expect(navTop).toBeGreaterThan(viewportHeight / 2);
+});
+
+test('tabs stay docked to the top on desktop widths', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await startFresh(page);
+  const position = await page.evaluate(() => getComputedStyle(document.querySelector('nav.tabs')).position);
+  expect(position).not.toBe('fixed');
+});
+
+test('theme-color meta tracks the active theme for mobile status bars', async ({ page }) => {
+  await startFresh(page);
+  const initial = await page.getAttribute('meta#themeColorMeta', 'content');
+  expect(initial).toMatch(/^#[0-9a-f]{6}$/i);
+  await page.click('#themeToggle');
+  const toggled = await page.getAttribute('meta#themeColorMeta', 'content');
+  expect(toggled).not.toBe(initial);
+  expect(toggled).toMatch(/^#[0-9a-f]{6}$/i);
+});
+
 test('active tab persists across reload', async ({ page }) => {
   await startFresh(page);
   await switchTab(page, 'fuel');

@@ -6,7 +6,7 @@ async function switchToSpanish(page) {
   // On page load the header button shows the CURRENT language; click once to flip to ES.
   await page.click('#langToggle');
   // Wait for a known ES translation to appear so the assertion doesn't race setLang()
-  await expect(page.locator('[data-tab="dashboard"]')).toHaveText('Panel');
+  await expect(page.locator('[data-tab="dashboard"] [data-i18n="tabDashboard"]')).toHaveText('Panel');
 }
 
 test.describe('Spanish translation coverage (regression for untranslated Parts tab)', () => {
