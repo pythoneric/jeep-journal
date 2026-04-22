@@ -116,6 +116,7 @@
     .flag-icon svg { display: block; width: 100%; height: 100%; }
     .severe-service-label { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; }
     .severe-service-badge { display: inline-block; background: #dc2626; color: white; font-size: 0.65rem; font-weight: 700; padding: 0.1rem 0.4rem; border-radius: 0.25rem; margin-left: 0.5rem; letter-spacing: 0.05em; text-transform: uppercase; vertical-align: middle; }
+    .low-stock-badge { display: inline-block; background: #dc2626; color: white; font-size: 0.65rem; font-weight: 700; padding: 0.1rem 0.4rem; border-radius: 0.25rem; margin-left: 0.5rem; letter-spacing: 0.05em; text-transform: uppercase; vertical-align: middle; }
     .trail-conditions { border: 1px solid var(--border); border-radius: 0.4rem; padding: 0.5rem; display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.4rem; }
     body.light .trail-conditions { border-color: var(--light-border); }
     .trail-conditions legend { padding: 0 0.5rem; font-size: 0.85rem; opacity: 0.85; }
@@ -635,12 +636,26 @@
         <h2 data-i18n="partsInventory">Parts Inventory</h2>
         <form id="partsForm">
           <input type="text" id="partName" data-i18n-placeholder="phPartName" placeholder="Part Name" required>
-          <input type="number" id="partQuantity" data-i18n-placeholder="phQuantity" placeholder="Quantity" min="1" value="1">
+          <input type="text" id="partNumber" data-i18n-placeholder="phPartNumber" placeholder="Part number / SKU (optional)">
+          <select id="partCategory">
+            <option value="Fluids" data-i18n="partCategoryFluids">Fluids</option>
+            <option value="Filters" data-i18n="partCategoryFilters">Filters</option>
+            <option value="Brakes" data-i18n="partCategoryBrakes">Brakes</option>
+            <option value="Tires" data-i18n="partCategoryTires">Tires</option>
+            <option value="Electrical" data-i18n="partCategoryElectrical">Electrical</option>
+            <option value="Fasteners" data-i18n="partCategoryFasteners">Fasteners</option>
+            <option value="Tools" data-i18n="partCategoryTools">Tools / Recovery</option>
+            <option value="Other" data-i18n="partCategoryOther" selected>Other</option>
+          </select>
+          <input type="number" id="partQuantity" data-i18n-placeholder="phQuantity" placeholder="Quantity" min="0" value="1">
+          <input type="number" step="0.01" id="partCost" min="0" data-i18n-placeholder="phPartCost" placeholder="Cost per unit (optional)">
+          <input type="number" id="partReorderAt" min="0" data-i18n-placeholder="phReorderAt" placeholder="Reorder at ≤ (optional)">
+          <input type="date" id="partPurchaseDate" data-i18n-placeholder="phPurchaseDate" placeholder="Purchase date (optional)">
           <input type="text" id="partLocation" data-i18n-placeholder="phPartLocation" placeholder="Location (e.g., Garage shelf)">
           <button type="submit" class="btn" data-i18n="addPart">Add Part</button>
         </form>
         <input type="search" id="partsSearch" class="search-input" data-i18n-placeholder="searchPlaceholder" placeholder="Search…">
-        <ul id="partsList"></ul>
+        <div id="partsList"></div>
       </div>
     </div>
     <div id="settings" class="tab-content hidden">
@@ -1205,6 +1220,22 @@
         phPartBrand: "Brand",
         phQuantity: "Quantity",
         phPartLocation: "Location (e.g., Garage shelf)",
+        phPartNumber: "Part number / SKU (optional)",
+        phPartCost: "Cost per unit ({cur}, optional)",
+        phReorderAt: "Reorder at ≤ (optional)",
+        phPurchaseDate: "Purchase date (optional)",
+        partCategoryLabel: "Category",
+        partCategoryFluids: "Fluids",
+        partCategoryFilters: "Filters",
+        partCategoryBrakes: "Brakes",
+        partCategoryElectrical: "Electrical",
+        partCategoryFasteners: "Fasteners",
+        partCategoryTires: "Tires",
+        partCategoryTools: "Tools / Recovery",
+        partCategoryOther: "Other",
+        partLowStock: "LOW STOCK",
+        partTotalLabel: "Total",
+        partDuplicateWarnFmt: "You already have {qty}× {name}. Add {add} more to existing stock? Cancel to save as a new row.",
         pwaTitle: "Install BitEric Jeep",
         pwaInstall: "Install",
         pwaInstructionsAndroid: "Add to your home screen for faster access.",
@@ -1588,6 +1619,22 @@
         phStation: "Estación",
         phOctane: "Octanaje",
         phPartName: "Nombre de pieza",
+        phPartNumber: "Número de parte / SKU (opcional)",
+        phPartCost: "Costo por unidad ({cur}, opcional)",
+        phReorderAt: "Reordenar cuando ≤ (opcional)",
+        phPurchaseDate: "Fecha de compra (opcional)",
+        partCategoryLabel: "Categoría",
+        partCategoryFluids: "Fluidos",
+        partCategoryFilters: "Filtros",
+        partCategoryBrakes: "Frenos",
+        partCategoryElectrical: "Eléctrico",
+        partCategoryFasteners: "Tornillería",
+        partCategoryTires: "Neumáticos",
+        partCategoryTools: "Herramientas / Recuperación",
+        partCategoryOther: "Otros",
+        partLowStock: "STOCK BAJO",
+        partTotalLabel: "Total",
+        partDuplicateWarnFmt: "Ya tienes {qty}× {name}. ¿Sumar {add} al stock existente? Cancelar para guardar como nueva fila.",
         phPartBrand: "Marca",
         phQuantity: "Cantidad",
         phPartLocation: "Ubicación (ej. estante del garaje)",
@@ -2778,25 +2825,45 @@
 
     function renderParts(items) {
       const list = document.getElementById('partsList');
-      list.className = 'entry-list';
       if (items.length === 0) {
-        list.innerHTML = `<li class="empty-state">${t('partsInventoryEmpty')}</li>`;
+        list.innerHTML = `<p class="empty-state">${t('partsInventoryEmpty')}</p>`;
         return;
       }
       const query = (document.getElementById('partsSearch')?.value || '').toLowerCase().trim();
       const filtered = query
-        ? items.filter(p => [p.name, p.location].some(v => String(v || '').toLowerCase().includes(query)))
+        ? items.filter(p => [p.name, p.location, p.partNumber, p.category].some(v => String(v || '').toLowerCase().includes(query)))
         : items;
       if (!filtered.length) {
-        list.innerHTML = `<li class="empty-state">${t('noPartsMatch')}</li>`;
+        list.innerHTML = `<p class="empty-state">${t('noPartsMatch')}</p>`;
         return;
       }
-      list.innerHTML = filtered.map(p => `
-        <li>
-          <span class="entry-main">${escHtml(p.name)} · ${p.quantity || 1}x${p.location ? ` · ${escHtml(p.location)}` : ''}</span>
-          ${rowActions(p.id)}
-        </li>
-      `).join('');
+      // Group by category like Mods. Parts without a category land in Other.
+      const grouped = filtered.reduce((acc, p) => {
+        const cat = p.category || 'Other';
+        (acc[cat] = acc[cat] || []).push(p);
+        return acc;
+      }, {});
+      list.innerHTML = Object.entries(grouped).map(([cat, ps]) => {
+        const rows = ps.map(p => {
+          const qty = Number.isFinite(+p.quantity) ? +p.quantity : 1;
+          const lowStock = p.reorderAt != null && qty <= p.reorderAt
+            ? ` <span class="low-stock-badge">${t('partLowStock')}</span>`
+            : '';
+          const skuBit = p.partNumber ? ` · ${escHtml(p.partNumber)}` : '';
+          const locBit = p.location ? ` · ${escHtml(p.location)}` : '';
+          const costBit = p.cost != null ? ` · ${currencySym()}${(+p.cost).toFixed(2)}/ea` : '';
+          const dateBit = p.purchaseDate ? ` · ${escHtml(p.purchaseDate)}` : '';
+          return `<li>
+            <span class="entry-main">${escHtml(p.name)}${skuBit} · ${qty}x${costBit}${locBit}${dateBit}${lowStock}</span>
+            ${rowActions(p.id)}
+          </li>`;
+        }).join('');
+        const subtotal = ps.reduce((sum, p) => sum + ((+p.cost || 0) * (+p.quantity || 0)), 0);
+        const totalLine = subtotal > 0
+          ? `<p>${t('partTotalLabel')}: ${currencySym()}${subtotal.toFixed(2)}</p>`
+          : '';
+        return `<h3>${escHtml(cat)}</h3><ul class="entry-list">${rows}</ul>${totalLine}`;
+      }).join('');
     }
 
     document.getElementById('partsSearch').addEventListener('input', async () => {
@@ -3406,13 +3473,54 @@ ${mods.map(m => `<tr><td>${esc(m.date)}</td><td>${esc(m.category)}</td><td>${esc
     document.getElementById('partsForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!activeVehicleId) return;
+      const qtyInput = document.getElementById('partQuantity').value;
+      const quantity = qtyInput === '' ? 1 : Math.max(0, +qtyInput);
+      const name = document.getElementById('partName').value;
+      const partNumber = document.getElementById('partNumber').value.trim();
+      const norm = s => (s || '').trim().toLowerCase();
+
+      // Duplicate detection (add path only): same vehicle + same name + same
+      // part number (case-insensitive). Offer to increment existing stock,
+      // which is what a user actually means — "I bought 2 more oil filters".
+      if (!editState.parts) {
+        const all = await db.getAll('parts');
+        const existing = all.find(x => x.vehicleId === activeVehicleId
+          && norm(x.name) === norm(name)
+          && norm(x.partNumber) === norm(partNumber));
+        if (existing) {
+          const msg = t('partDuplicateWarnFmt')
+            .replace('{qty}', existing.quantity || 0)
+            .replace('{name}', existing.name)
+            .replace('{add}', quantity);
+          if (confirm(msg)) {
+            existing.quantity = (existing.quantity || 0) + quantity;
+            existing.updatedAt = new Date();
+            await db.put('parts', existing);
+            await loadParts();
+            e.target.reset();
+            document.getElementById('partQuantity').value = 1;
+            document.getElementById('partName').focus();
+            return;
+          }
+          // User chose "Cancel" → fall through and save as a new row.
+        }
+      }
+
+      const now = new Date();
+      const existingEntry = editState.parts ? (await db.getAll('parts')).find(x => x.id === editState.parts) : null;
       const data = {
         id: editState.parts || crypto.randomUUID(),
         vehicleId: activeVehicleId,
-        name: document.getElementById('partName').value,
-        quantity: +document.getElementById('partQuantity').value || 1,
+        name: name,
+        partNumber: partNumber || null,
+        category: document.getElementById('partCategory').value || 'Other',
+        quantity: quantity,
+        cost: +document.getElementById('partCost').value || null,
+        reorderAt: +document.getElementById('partReorderAt').value || null,
+        purchaseDate: document.getElementById('partPurchaseDate').value || null,
         location: document.getElementById('partLocation').value,
-        createdAt: new Date()
+        createdAt: existingEntry?.createdAt || now,
+        updatedAt: now
       };
       if (editState.parts) {
         await db.put('parts', data);
@@ -3423,6 +3531,7 @@ ${mods.map(m => `<tr><td>${esc(m.date)}</td><td>${esc(m.category)}</td><td>${esc
       await loadParts();
       e.target.reset();
       document.getElementById('partQuantity').value = 1;
+      document.getElementById('partCategory').value = 'Other';
       document.getElementById('partName').focus();
     });
 
@@ -3445,10 +3554,16 @@ ${mods.map(m => `<tr><td>${esc(m.date)}</td><td>${esc(m.category)}</td><td>${esc
         if (!p) return;
         editState.parts = p.id;
         document.getElementById('partName').value = p.name || '';
-        document.getElementById('partQuantity').value = p.quantity || 1;
+        document.getElementById('partNumber').value = p.partNumber || '';
+        document.getElementById('partCategory').value = p.category || 'Other';
+        const qty = Number.isFinite(+p.quantity) ? +p.quantity : 1;
+        document.getElementById('partQuantity').value = qty;
+        document.getElementById('partCost').value = p.cost != null ? p.cost : '';
+        document.getElementById('partReorderAt').value = p.reorderAt != null ? p.reorderAt : '';
+        document.getElementById('partPurchaseDate').value = p.purchaseDate || '';
         document.getElementById('partLocation').value = p.location || '';
         const form = document.getElementById('partsForm');
-        setEditBanner(form, `${t('editingEntry')} ${p.name}`, () => { form.reset(); exitPartsEdit(); });
+        setEditBanner(form, `${t('editingEntry')} ${p.name}`, () => { form.reset(); document.getElementById('partCategory').value = 'Other'; exitPartsEdit(); });
         form.querySelector('button[type="submit"]').textContent = t('updateEntry');
         form.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
@@ -4047,14 +4162,14 @@ ${mods.map(m => `<tr><td>${esc(m.date)}</td><td>${esc(m.category)}</td><td>${esc
       ];
       for (const entry of demoMods) await db.add('mods', entry);
       const demoParts = [
-        { id: crypto.randomUUID(), vehicleId: demoVehicle.id, name: 'Oil filter (Mopar MO-899)', quantity: 3, location: 'Garage shelf A', createdAt: new Date() },
-        { id: crypto.randomUUID(), vehicleId: demoVehicle.id, name: 'Engine oil (5W-30 synthetic)', quantity: 2, location: 'Garage shelf A', createdAt: new Date() },
-        { id: crypto.randomUUID(), vehicleId: demoVehicle.id, name: 'Cabin air filter', quantity: 1, location: 'Garage shelf B', createdAt: new Date() },
-        { id: crypto.randomUUID(), vehicleId: demoVehicle.id, name: 'Engine air filter (K&N)', quantity: 1, location: 'Garage shelf B', createdAt: new Date() },
-        { id: crypto.randomUUID(), vehicleId: demoVehicle.id, name: 'Wiper blades (22" + 20")', quantity: 1, location: 'Garage shelf C', createdAt: new Date() },
-        { id: crypto.randomUUID(), vehicleId: demoVehicle.id, name: 'Spare LED fog bulbs', quantity: 2, location: 'Toolbox drawer 2', createdAt: new Date() },
-        { id: crypto.randomUUID(), vehicleId: demoVehicle.id, name: 'Recovery strap (30k lb)', quantity: 1, location: 'Truck bed box', createdAt: new Date() },
-        { id: crypto.randomUUID(), vehicleId: demoVehicle.id, name: 'Tire plug kit', quantity: 1, location: 'Truck bed box', createdAt: new Date() }
+        { id: crypto.randomUUID(), vehicleId: demoVehicle.id, name: 'Oil filter',          partNumber: 'Mopar MO-899',        category: 'Filters',    quantity: 3, cost: 12.00, reorderAt: 2, purchaseDate: '2024-01-10', location: 'Garage shelf A',  createdAt: new Date() },
+        { id: crypto.randomUUID(), vehicleId: demoVehicle.id, name: 'Engine oil 5W-30',    partNumber: 'Mobil 1 Delvac',      category: 'Fluids',     quantity: 2, cost: 32.00, reorderAt: 1, purchaseDate: '2024-02-01', location: 'Garage shelf A',  createdAt: new Date() },
+        { id: crypto.randomUUID(), vehicleId: demoVehicle.id, name: 'Cabin air filter',    partNumber: 'Mopar 68364865AA',    category: 'Filters',    quantity: 1, cost: 18.50, reorderAt: 1, purchaseDate: '2024-01-15', location: 'Garage shelf B',  createdAt: new Date() },
+        { id: crypto.randomUUID(), vehicleId: demoVehicle.id, name: 'Engine air filter',   partNumber: 'K&N 33-2437',         category: 'Filters',    quantity: 1, cost: 48.00, reorderAt: 1, purchaseDate: '2023-11-02', location: 'Garage shelf B',  createdAt: new Date() },
+        { id: crypto.randomUUID(), vehicleId: demoVehicle.id, name: 'Wiper blades 22"+20"',partNumber: 'Rain-X 2-pack',       category: 'Other',      quantity: 1, cost: 25.00, reorderAt: 1, purchaseDate: '2023-10-20', location: 'Garage shelf C',  createdAt: new Date() },
+        { id: crypto.randomUUID(), vehicleId: demoVehicle.id, name: 'LED fog bulbs',       partNumber: 'H10 Rigid pair',      category: 'Electrical', quantity: 2, cost: 55.00, reorderAt: 1, purchaseDate: '2024-03-05', location: 'Toolbox drawer 2',createdAt: new Date() },
+        { id: crypto.randomUUID(), vehicleId: demoVehicle.id, name: 'Recovery strap 30k',  partNumber: 'ARB ARB705LB',        category: 'Tools',      quantity: 1, cost: 70.00, reorderAt: null, purchaseDate: '2023-09-01', location: 'Truck bed box',   createdAt: new Date() },
+        { id: crypto.randomUUID(), vehicleId: demoVehicle.id, name: 'Tire plug kit',       partNumber: 'Safety Seal deluxe',  category: 'Tires',      quantity: 1, cost: 28.00, reorderAt: 1, purchaseDate: '2023-09-01', location: 'Truck bed box',   createdAt: new Date() }
       ];
       for (const entry of demoParts) await db.add('parts', entry);
       const demoTrails = [
