@@ -1926,6 +1926,7 @@
       else if (tab === 'parts') loadParts();
       else if (tab === 'trails') loadTrails();
       else if (tab === 'dashboard') loadDashboard();
+      else if (tab === 'settings') restoreDraft('vehicleForm');
       autofillFormDefaults(tab);
     }
 
@@ -1966,6 +1967,66 @@
 
     function t(key) { return applyCurrencyTokens(I18N[lang][key] || key); }
     function escHtml(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+    // --- Draft auto-save -------------------------------------------------
+    // Each write form (add-vehicle, maintenance, fuel, mods, trails, parts)
+    // serializes its inputs to localStorage on every keystroke, keyed by form
+    // id. On tab open the draft is restored so a half-filled entry survives a
+    // tab switch, accidental refresh, or closing the browser. The draft is
+    // cleared when the form fires its native `reset` event — which the app
+    // only triggers on a successful save, so a cancelled confirm preserves
+    // the draft. File inputs (photos) are intentionally skipped: serializing
+    // a data-URL would trip the ~5MB localStorage quota for a single entry.
+    function draftKey(formId) { return `draft:${formId}`; }
+    function serializeDraft(form) {
+      const data = {};
+      form.querySelectorAll('input, textarea, select').forEach(el => {
+        if (!el.id || el.type === 'file') return;
+        if (el.type === 'checkbox') data[el.id] = el.checked;
+        else data[el.id] = el.value;
+      });
+      return data;
+    }
+    const __draftWired = new Set();
+    function wireDraftAutoSave(formId) {
+      if (__draftWired.has(formId)) return; // idempotent — loadApp can run many times
+      const form = document.getElementById(formId);
+      if (!form) return;
+      __draftWired.add(formId);
+      let timer = null;
+      const persist = () => {
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+          try { localStorage.setItem(draftKey(formId), JSON.stringify(serializeDraft(form))); }
+          catch {}
+        }, 250);
+      };
+      form.addEventListener('input', persist);
+      form.addEventListener('change', persist);
+      form.addEventListener('reset', () => {
+        clearTimeout(timer);
+        localStorage.removeItem(draftKey(formId));
+      });
+    }
+    function restoreDraft(formId) {
+      // Skip restore while the form is in edit mode — the prefill from the
+      // edited record should win over any leftover draft from a separate
+      // "new entry" session. Callers that have per-form edit state (e.g.
+      // `editState.maintenance`) pass their current edit id via opts.
+      const form = document.getElementById(formId);
+      if (!form) return;
+      let raw;
+      try { raw = localStorage.getItem(draftKey(formId)); } catch { return; }
+      if (!raw) return;
+      let data;
+      try { data = JSON.parse(raw); } catch { return; }
+      Object.entries(data).forEach(([id, value]) => {
+        const el = document.getElementById(id);
+        if (!el || el.type === 'file') return;
+        if (el.type === 'checkbox') el.checked = !!value;
+        else if (el.value === '' || el.value == null) el.value = value;
+      });
+    }
     function rowActions(id) {
       return `<span class="row-actions">
         <button type="button" class="edit-btn" data-id="${id}" aria-label="${t('editBtn')}" title="${t('editBtn')}">✎</button>
@@ -2890,6 +2951,7 @@
     }
 
     async function loadFuel() {
+      if (!editState.fuel) restoreDraft('fuelForm');
       const fuel = (await db.getAll('fuel')).filter(f => f.vehicleId === activeVehicleId).sort((a,b) => new Date(a.date) - new Date(b.date));
       computeMpg(fuel);
       const mpgData = fuel.filter(f => f.mpg != null).map(f => ({ x: new Date(f.date), y: f.mpg }));
@@ -2989,6 +3051,7 @@
       renderMaintenanceList(items);
       await renderReminderStatusChart(items);
       await refreshEngineHint();
+      if (!editState.maintenance) restoreDraft('maintenanceForm');
     }
 
     // Bucket active reminders into overdue / due-soon / upcoming. Dismissed
@@ -3097,6 +3160,7 @@
     }
 
     async function loadParts() {
+      if (!editState.parts) restoreDraft('partsForm');
       const items = (await db.getAll('parts')).filter(p => p.vehicleId === activeVehicleId).sort((a,b) => (a.name || '').localeCompare(b.name || ''));
       renderParts(items);
       renderPartsInventoryChart(items);
@@ -3508,6 +3572,7 @@ ${mods.map(m => `<tr><td>${esc(m.date)}</td><td>${esc(m.category)}</td><td>${esc
     });
 
     async function loadMods() {
+      if (!editState.mods) restoreDraft('modsForm');
       const all = (await db.getAll('mods')).filter(m => m.vehicleId === activeVehicleId);
       renderMods(all);
       renderModsCategoryChart(all);
@@ -3751,6 +3816,7 @@ ${mods.map(m => `<tr><td>${esc(m.date)}</td><td>${esc(m.category)}</td><td>${esc
     }
 
     async function loadTrails() {
+      if (!editState.trails) restoreDraft('trailsForm');
       const items = (await db.getAll('trails')).filter(x => x.vehicleId === activeVehicleId).sort((a, b) => new Date(b.date) - new Date(a.date));
       renderTrails(items);
       renderTrailsConditionChart(items);
@@ -3970,6 +4036,16 @@ ${mods.map(m => `<tr><td>${esc(m.date)}</td><td>${esc(m.category)}</td><td>${esc
       const data = {
         schemaVersion: SCHEMA_VERSION,
         exportedAt: new Date().toISOString(),
+        // User-preference settings from localStorage. Restoring a backup onto
+        // a fresh install brings back the language, theme, currency, and which
+        // vehicle was active — otherwise a full DB restore would land the
+        // user on English+USD defaults no matter what they had before.
+        settings: {
+          lang: localStorage.getItem('lang') || 'en',
+          theme: localStorage.getItem('theme') || 'dark',
+          currency: localStorage.getItem('currency') || 'USD',
+          activeVehicleId: localStorage.getItem('activeVehicleId') || null,
+        },
         vehicles: await db.getAll('vehicles'),
         maintenance: stripPhoto(await db.getAll('maintenance')),
         fuel: await db.getAll('fuel'),
@@ -4338,6 +4414,16 @@ ${mods.map(m => `<tr><td>${esc(m.date)}</td><td>${esc(m.category)}</td><td>${esc
       for (const mod of data.mods || []) await db.add('mods', mod);
       for (const p of data.parts || []) await db.add('parts', p);
       for (const tr of data.trails || []) await db.add('trails', tr);
+      // Restore user-preference settings if the backup carried them. Matches
+      // the export side symmetrically so a round-trip is truly lossless.
+      let restoredLang = null;
+      if (data.settings && typeof data.settings === 'object') {
+        const s = data.settings;
+        if (typeof s.lang === 'string') { localStorage.setItem('lang', s.lang); lang = s.lang; restoredLang = s.lang; }
+        if (typeof s.theme === 'string') { setTheme(s.theme); }
+        if (typeof s.currency === 'string') { localStorage.setItem('currency', s.currency); currency = s.currency; }
+        if (typeof s.activeVehicleId === 'string') { localStorage.setItem('activeVehicleId', s.activeVehicleId); activeVehicleId = s.activeVehicleId; }
+      }
       await loadVehicles();
       // Re-run every tab's loader so the currently-visible tab reflects the
       // imported data without requiring a tab switch.
@@ -4346,6 +4432,9 @@ ${mods.map(m => `<tr><td>${esc(m.date)}</td><td>${esc(m.category)}</td><td>${esc
       try { await loadMods(); } catch {}
       try { await loadParts(); } catch {}
       try { await loadTrails(); } catch {}
+      // Reapply restored language last — sweeps i18n-tagged DOM elements
+      // so labels reflect the backup's language.
+      if (restoredLang) setLang(restoredLang);
       showToast(t('importSuccess'));
     }
 
@@ -4608,6 +4697,10 @@ ${mods.map(m => `<tr><td>${esc(m.date)}</td><td>${esc(m.category)}</td><td>${esc
     async function loadApp() {
       setLang(lang);
       setTheme(theme);
+      // Wire draft auto-save once — listeners are idempotent but persist()
+      // captures the form by id at call time so one-time wiring is enough.
+      ['vehicleForm', 'maintenanceForm', 'fuelForm', 'modsForm', 'trailsForm', 'partsForm']
+        .forEach(wireDraftAutoSave);
       await loadVehicles();
       switchTab(lastTab);
       loadFuel();
