@@ -188,6 +188,8 @@
     .stat-delta.negative { color: #dc2626; }
     .stat-big { font-size: 1.5rem; font-weight: 700; }
     .stat-sub { opacity: 0.75; font-size: 0.85rem; }
+    .engine-hint { margin: 0.35rem 0 0; font-style: italic; }
+    .engine-hint.unknown { color: var(--accent); opacity: 0.9; }
     .template-row { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; }
     .template-row select { flex: 1; min-width: 200px; }
     .report-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap; }
@@ -371,29 +373,36 @@
           <select id="mTemplate">
             <option value="" data-i18n="selectTemplate">Select a service…</option>
             <optgroup data-i18n-label="templateGroupRoutine" label="Routine">
-              <option value="oil" data-i18n="templateOil">Oil change (5k mi / 6 mo)</option>
+              <option value="oil" data-i18n="templateOil">Oil change</option>
               <option value="tireRotation" data-i18n="templateTireRotation">Tire rotation (7.5k mi / 6 mo)</option>
               <option value="airFilter" data-i18n="templateAirFilter">Air filter (30k mi / 24 mo)</option>
               <option value="cabinFilter" data-i18n="templateCabinFilter">Cabin filter (20k mi / 12 mo)</option>
-              <option value="sparkPlugs" data-i18n="templateSparkPlugs">Spark plugs (60k mi)</option>
-              <option value="coolant" data-i18n="templateCoolant">Coolant (50k mi / 36 mo)</option>
+              <option value="sparkPlugs" data-i18n="templateSparkPlugs">Spark plugs</option>
+              <option value="coolant" data-i18n="templateCoolant">Coolant</option>
               <option value="battery" data-i18n="templateBattery">Battery check (50k mi / 48 mo)</option>
               <option value="brakeFluid" data-i18n="templateBrakeFluid">Brake fluid (30k mi / 24 mo)</option>
+              <option value="brakeCaliperSlides" data-i18n="templateBrakeCaliperSlides">Brake caliper slides (30k mi / 24 mo)</option>
               <option value="transmission" data-i18n="templateTransmission">Transmission fluid (60k mi / 36 mo)</option>
+              <option value="bodyMount" data-i18n="templateBodyMount">Body mount re-torque (12 mo)</option>
             </optgroup>
             <optgroup data-i18n-label="templateGroupOffroad" label="Offroad / Drivetrain">
               <option value="diffFront" data-i18n="templateDiffFront">Front diff fluid (30k mi / 24 mo)</option>
               <option value="diffRear" data-i18n="templateDiffRear">Rear diff fluid (30k mi / 24 mo)</option>
               <option value="transferCase" data-i18n="templateTransferCase">Transfer case fluid (30k mi / 24 mo)</option>
-              <option value="wheelBearing" data-i18n="templateWheelBearing">Wheel bearing repack (30k mi)</option>
               <option value="uJoints" data-i18n="templateUJoints">U-joints grease (10k mi)</option>
-              <option value="steering" data-i18n="templateSteering">Steering linkage inspect (10k mi)</option>
+              <option value="steeringInspect" data-i18n="templateSteeringInspect">Steering inspection — death wobble (10k mi / 12 mo)</option>
+            </optgroup>
+            <optgroup data-i18n-label="templateGroupPlatform" label="Platform-specific">
+              <option value="oilCooler" data-i18n="templateOilCooler">Oil cooler / housing inspect (60k mi — 3.6L Pentastar)</option>
+              <option value="egrCooler" data-i18n="templateEgrCooler">EGR cooler inspect (30k mi / 36 mo — EcoDiesel)</option>
+              <option value="tpmsBattery" data-i18n="templateTpmsBattery">TPMS sensor battery (120 mo)</option>
             </optgroup>
           </select>
+          <p id="engineHint" class="stat-sub engine-hint"></p>
         </div>
         <form id="maintenanceForm">
           <input type="date" id="mDate" required>
-          <input type="number" id="mOdometer" data-i18n-placeholder="phOdometerMi" placeholder="Odometer (mi)" required>
+          <input type="number" id="mOdometer" min="0" data-i18n-placeholder="phOdometerMi" placeholder="Odometer (mi)" required>
           <select id="mType">
             <optgroup data-i18n-label="typeGroupFluids" label="Fluids">
               <option value="Oil change" data-i18n="oilChange">Oil change</option>
@@ -410,8 +419,10 @@
               <option value="Tire replacement" data-i18n="tireReplacement">Tire replacement</option>
               <option value="Brake pads" data-i18n="brakePads">Brake pads</option>
               <option value="Brake rotors" data-i18n="brakeRotors">Brake rotors</option>
+              <option value="Brake caliper slide lube" data-i18n="brakeCaliperSlide">Brake caliper slide lube</option>
               <option value="Alignment" data-i18n="alignment">Alignment</option>
               <option value="Wheel re-torque" data-i18n="wheelRetorque">Wheel re-torque</option>
+              <option value="TPMS sensor" data-i18n="tpmsSensor">TPMS sensor</option>
             </optgroup>
             <optgroup data-i18n-label="typeGroupOffroad" label="Drivetrain / Offroad">
               <option value="Wheel bearing service" data-i18n="wheelBearing">Wheel bearing service</option>
@@ -421,9 +432,11 @@
               <option value="Tie rod / drag link" data-i18n="tieRodDragLink">Tie rod / drag link</option>
               <option value="Track bar" data-i18n="trackBar">Track bar</option>
               <option value="Steering stabilizer" data-i18n="steeringStabilizer">Steering stabilizer</option>
+              <option value="Steering inspection" data-i18n="steeringInspection">Steering inspection</option>
               <option value="Control arm bushings" data-i18n="controlArmBushings">Control arm bushings</option>
               <option value="Skid plate inspect" data-i18n="skidPlateInspect">Skid plate inspect</option>
               <option value="Lift kit re-torque" data-i18n="liftRetorque">Lift kit re-torque</option>
+              <option value="Body mount re-torque" data-i18n="bodyMountRetorque">Body mount re-torque</option>
             </optgroup>
             <optgroup data-i18n-label="typeGroupTuneup" label="Tune-up / Other">
               <option value="Air filter" data-i18n="airFilter">Air filter</option>
@@ -431,6 +444,8 @@
               <option value="Spark plugs" data-i18n="sparkPlugs">Spark plugs</option>
               <option value="Battery" data-i18n="battery">Battery</option>
               <option value="Belts / hoses" data-i18n="beltsHoses">Belts / hoses</option>
+              <option value="Oil cooler / housing inspect" data-i18n="oilCoolerInspect">Oil cooler / housing inspect</option>
+              <option value="EGR cooler inspect" data-i18n="egrCoolerInspect">EGR cooler inspect</option>
               <option value="Wipers" data-i18n="wipers">Wipers</option>
               <option value="Inspection" data-i18n="inspection">Inspection</option>
               <option value="Other" data-i18n="other">Other</option>
@@ -438,13 +453,13 @@
           </select>
           <input type="text" id="mOtherType" class="hidden" data-i18n-placeholder="phOtherType" placeholder="Specify if Other">
           <label><input type="checkbox" id="mShop"> <span data-i18n="shop">Shop</span> (<span data-i18n="diy">DIY</span>)</label>
-          <input type="number" step="0.01" id="mCost" data-i18n-placeholder="phCostUsd" placeholder="Cost (USD)">
+          <input type="number" step="0.01" id="mCost" min="0" data-i18n-placeholder="phCostUsd" placeholder="Cost (USD)">
           <textarea id="mNotes" data-i18n-placeholder="phNotes" placeholder="Notes"></textarea>
           <details class="interval-details">
             <summary data-i18n="setReminder">Set Service Reminder</summary>
             <div class="interval-fields">
-              <input type="number" id="mIntervalMiles" data-i18n-placeholder="phIntervalMiles" placeholder="Interval (miles)">
-              <input type="number" id="mIntervalMonths" data-i18n-placeholder="phIntervalMonths" placeholder="Interval (months)">
+              <input type="number" id="mIntervalMiles" min="0" data-i18n-placeholder="phIntervalMiles" placeholder="Interval (miles)">
+              <input type="number" id="mIntervalMonths" min="0" data-i18n-placeholder="phIntervalMonths" placeholder="Interval (months)">
             </div>
           </details>
           <details class="measurements-details">
@@ -630,6 +645,7 @@
             <select id="vEngine">
               <option value="" data-i18n="enginePlaceholder">Engine…</option>
               <option value="3.6L Pentastar">3.6L Pentastar</option>
+              <option value="3.8L V6 (JK)">3.8L V6 (JK)</option>
               <option value="2.0L Turbo">2.0L Turbo</option>
               <option value="3.0L EcoDiesel">3.0L EcoDiesel</option>
               <option value="4xe PHEV">4xe PHEV</option>
@@ -673,6 +689,7 @@
             <select id="eEngine">
               <option value="" data-i18n="enginePlaceholder">Engine…</option>
               <option value="3.6L Pentastar">3.6L Pentastar</option>
+              <option value="3.8L V6 (JK)">3.8L V6 (JK)</option>
               <option value="2.0L Turbo">2.0L Turbo</option>
               <option value="3.0L EcoDiesel">3.0L EcoDiesel</option>
               <option value="4xe PHEV">4xe PHEV</option>
@@ -886,15 +903,17 @@
         loaderNote: "Demo content is sample-only and safe to explore.",
         quickTemplates: "Quick templates",
         selectTemplate: "Select a service…",
-        templateOil: "Oil change (5k mi / 6 mo)",
+        templateOil: "Oil change",
         templateTireRotation: "Tire rotation (7.5k mi / 6 mo)",
         templateBrakeFluid: "Brake fluid (30k mi / 24 mo)",
         templateTransmission: "Transmission fluid (60k mi / 36 mo)",
         templateAirFilter: "Air filter (30k mi / 24 mo)",
         templateCabinFilter: "Cabin filter (20k mi / 12 mo)",
-        templateSparkPlugs: "Spark plugs (60k mi)",
-        templateCoolant: "Coolant (50k mi / 36 mo)",
+        templateSparkPlugs: "Spark plugs",
+        templateCoolant: "Coolant",
         templateBattery: "Battery check (50k mi / 48 mo)",
+        templateBrakeCaliperSlides: "Brake caliper slides (30k mi / 24 mo)",
+        templateBodyMount: "Body mount re-torque (12 mo)",
         printReport: "Print service report",
         monthlyBudget: "Monthly budget ({cur})",
         annualBudget: "Annual budget ({cur})",
@@ -1005,12 +1024,21 @@
         loaderDeleteTitle: "🗑",
         templateGroupRoutine: "Routine",
         templateGroupOffroad: "Offroad / Drivetrain",
+        templateGroupPlatform: "Platform-specific",
         templateDiffFront: "Front diff fluid (30k mi / 24 mo)",
         templateDiffRear: "Rear diff fluid (30k mi / 24 mo)",
         templateTransferCase: "Transfer case fluid (30k mi / 24 mo)",
-        templateWheelBearing: "Wheel bearing repack (30k mi)",
         templateUJoints: "U-joints grease (10k mi)",
-        templateSteering: "Steering linkage inspect (10k mi)",
+        templateSteeringInspect: "Steering inspection — death wobble (10k mi / 12 mo)",
+        templateOilCooler: "Oil cooler / housing inspect (60k mi — 3.6L Pentastar)",
+        templateEgrCooler: "EGR cooler inspect (30k mi / 36 mo — EcoDiesel)",
+        templateTpmsBattery: "TPMS sensor battery (120 mo)",
+        engineHintPrefix: "Intervals tuned for",
+        engineHintUnknown: "Intervals default to 3.6L Pentastar — set the engine in Settings for tuned values.",
+        engineNamePentastar: "3.6L Pentastar",
+        engineNameV638: "3.8L V6 (JK)",
+        engineNameEcoDiesel: "3.0L EcoDiesel",
+        engineNameTurbo20: "2.0L Turbo",
         typeGroupFluids: "Fluids",
         typeGroupTiresBrakes: "Tires / Brakes",
         typeGroupOffroad: "Drivetrain / Offroad",
@@ -1032,6 +1060,13 @@
         skidPlateInspect: "Skid plate inspect",
         liftRetorque: "Lift kit re-torque",
         beltsHoses: "Belts / hoses",
+        steeringInspection: "Steering inspection",
+        oilCoolerInspect: "Oil cooler / housing inspect",
+        egrCoolerInspect: "EGR cooler inspect",
+        tpmsSensor: "TPMS sensor",
+        brakeCaliperSlide: "Brake caliper slide lube",
+        bodyMountRetorque: "Body mount re-torque",
+        followUpAutoNote: "Auto-scheduled after service",
         measurements: "Measurements (optional)",
         padFront: "Pad thickness front (mm)",
         padRear: "Pad thickness rear (mm)",
@@ -1210,14 +1245,16 @@
         loaderNote: "El contenido de demo es un ejemplo seguro para explorar.",
         quickTemplates: "Plantillas rápidas",
         selectTemplate: "Selecciona un servicio…",
-        templateOil: "Cambio de aceite (5k mi / 6 mes)",
+        templateOil: "Cambio de aceite",
         templateTireRotation: "Rotación de neumáticos (7.5k mi / 6 mes)",
         templateBrakeFluid: "Fluido de freno (30k mi / 24 mes)",
         templateTransmission: "Fluido de transmisión (60k mi / 36 mes)",
         templateAirFilter: "Filtro de aire (30k mi / 24 mes)",
         templateCabinFilter: "Filtro de cabina (20k mi / 12 mes)",
-        templateSparkPlugs: "Bujías (60k mi)",
-        templateCoolant: "Refrigerante (50k mi / 36 mes)",
+        templateSparkPlugs: "Bujías",
+        templateCoolant: "Refrigerante",
+        templateBrakeCaliperSlides: "Guías de caliper (30k mi / 24 mes)",
+        templateBodyMount: "Re-torque montajes de carrocería (12 mes)",
         templateBattery: "Revisión de batería (50k mi / 48 mes)",
         printReport: "Imprimir reporte de servicio",
         monthlyBudget: "Presupuesto mensual ({cur})",
@@ -1332,9 +1369,18 @@
         templateDiffFront: "Fluido diferencial delantero (30k mi / 24 mes)",
         templateDiffRear: "Fluido diferencial trasero (30k mi / 24 mes)",
         templateTransferCase: "Fluido caja transfer (30k mi / 24 mes)",
-        templateWheelBearing: "Reempacar rodamientos (30k mi)",
         templateUJoints: "Engrasar crucetas (10k mi)",
-        templateSteering: "Inspección dirección (10k mi)",
+        templateSteeringInspect: "Inspección dirección — death wobble (10k mi / 12 mes)",
+        templateOilCooler: "Inspección cooler / carcasa de aceite (60k mi — 3.6L Pentastar)",
+        templateEgrCooler: "Inspección cooler EGR (30k mi / 36 mes — EcoDiesel)",
+        templateTpmsBattery: "Batería sensor TPMS (120 mes)",
+        templateGroupPlatform: "Específico por plataforma",
+        engineHintPrefix: "Intervalos ajustados para",
+        engineHintUnknown: "Intervalos por defecto para 3.6L Pentastar — configura el motor para valores específicos.",
+        engineNamePentastar: "3.6L Pentastar",
+        engineNameV638: "3.8L V6 (JK)",
+        engineNameEcoDiesel: "3.0L EcoDiesel",
+        engineNameTurbo20: "2.0L Turbo",
         typeGroupFluids: "Fluidos",
         typeGroupTiresBrakes: "Neumáticos / Frenos",
         typeGroupOffroad: "Tracción / Offroad",
@@ -1356,6 +1402,13 @@
         skidPlateInspect: "Inspección protectores",
         liftRetorque: "Re-torque kit de elevación",
         beltsHoses: "Correas / mangueras",
+        steeringInspection: "Inspección de dirección",
+        oilCoolerInspect: "Inspección cooler / carcasa de aceite",
+        egrCoolerInspect: "Inspección cooler EGR",
+        tpmsSensor: "Sensor TPMS",
+        brakeCaliperSlide: "Lubricar guías de caliper",
+        bodyMountRetorque: "Re-torque montajes carrocería",
+        followUpAutoNote: "Agendado automáticamente tras servicio",
         measurements: "Mediciones (opcional)",
         padFront: "Espesor pastilla delantera (mm)",
         padRear: "Espesor pastilla trasera (mm)",
@@ -2052,38 +2105,118 @@
       await loadDashboard();
     });
 
-    // Quick templates (severe-service halves the mileage + months when vehicle opts in)
-    const MAINT_TEMPLATES = {
-      oil:           { type: 'Oil change',                  miles: 5000,  months: 6  },
-      tireRotation:  { type: 'Tire rotation',               miles: 7500,  months: 6  },
-      brakeFluid:    { type: 'Brake fluid',                 miles: 30000, months: 24 },
-      transmission:  { type: 'Transmission fluid',          miles: 60000, months: 36 },
-      airFilter:     { type: 'Air filter',                  miles: 30000, months: 24 },
-      cabinFilter:   { type: 'Cabin filter',                miles: 20000, months: 12 },
-      sparkPlugs:    { type: 'Spark plugs',                 miles: 60000, months: 0  },
-      coolant:       { type: 'Coolant',                     miles: 50000, months: 36 },
-      battery:       { type: 'Battery',                     miles: 50000, months: 48 },
-      diffFront:     { type: 'Differential fluid front',    miles: 30000, months: 24 },
-      diffRear:      { type: 'Differential fluid rear',     miles: 30000, months: 24 },
-      transferCase:  { type: 'Transfer case fluid',         miles: 30000, months: 24 },
-      wheelBearing:  { type: 'Wheel bearing service',       miles: 30000, months: 0  },
-      uJoints:       { type: 'U-joints grease',             miles: 10000, months: 12 },
-      steering:      { type: 'Tie rod / drag link',         miles: 10000, months: 12 }
+    // Engine kind detection — pulls from vehicle.engine (free-text in Settings).
+    // Used to pick the right maintenance interval for services that differ by
+    // engine family (oil, spark plugs, coolant). Defaults to Pentastar when
+    // nothing recognizable is set.
+    function engineKind(engineStr) {
+      const s = (engineStr || '').toLowerCase();
+      if (/ecodiesel|3\.0l|3\.0\s*l|diesel/.test(s)) return 'ecodiesel';
+      if (/2\.0l|2\.0\s*l|turbo|4xe|phev/.test(s)) return 'turbo20';
+      if (/3\.8l|3\.8\s*l/.test(s)) return 'v638';
+      if (/3\.6l|3\.6\s*l|pentastar/.test(s)) return 'pentastar';
+      return null; // unknown → defaults apply, hint shows a nudge to set it
+    }
+    const ENGINE_LABEL_KEYS = {
+      pentastar: 'engineNamePentastar',
+      v638:      'engineNameV638',
+      ecodiesel: 'engineNameEcoDiesel',
+      turbo20:   'engineNameTurbo20',
     };
 
+    // Quick templates. `byEngine` overrides apply when the active vehicle's
+    // engine matches; otherwise the top-level miles/months are used. Severe
+    // service halves the resolved values.
+    const MAINT_TEMPLATES = {
+      oil: {
+        type: 'Oil change', miles: 5000, months: 6,
+        byEngine: {
+          pentastar: { miles: 5000,  months: 6 },
+          v638:      { miles: 3000,  months: 6 },  // 3.8L runs hot; stick to 3k on conventional, 5k on synthetic
+          turbo20:   { miles: 5000,  months: 12 },
+          ecodiesel: { miles: 10000, months: 12 },
+        }
+      },
+      tireRotation: { type: 'Tire rotation', miles: 7500, months: 6 },
+      brakeFluid:   { type: 'Brake fluid',   miles: 30000, months: 24 },
+      transmission: { type: 'Transmission fluid', miles: 60000, months: 36 },
+      airFilter:    { type: 'Air filter',    miles: 30000, months: 24 },
+      cabinFilter:  { type: 'Cabin filter',  miles: 20000, months: 12 },
+      sparkPlugs: {
+        type: 'Spark plugs', miles: 100000, months: 0,
+        byEngine: {
+          pentastar: { miles: 100000, months: 0 },
+          v638:      { miles: 30000,  months: 0 },  // copper plugs
+          turbo20:   { miles: 40000,  months: 0 },
+          ecodiesel: { miles: 0,      months: 0 },  // diesel: no plugs
+        }
+      },
+      coolant: {
+        type: 'Coolant', miles: 150000, months: 120,
+        byEngine: {
+          pentastar: { miles: 150000, months: 120 }, // JL/JT OAT: 10yr / 150k initial
+          v638:      { miles: 100000, months: 60 },  // JK HOAT: 5yr / 100k initial
+          turbo20:   { miles: 150000, months: 120 },
+          ecodiesel: { miles: 100000, months: 60 },
+        }
+      },
+      battery:        { type: 'Battery',                    miles: 50000, months: 48 },
+      brakeCaliperSlides: { type: 'Brake caliper slide lube', miles: 30000, months: 24 },
+      bodyMount:      { type: 'Body mount re-torque',       miles: 0,     months: 12 },
+      diffFront:      { type: 'Differential fluid front',   miles: 30000, months: 24 },
+      diffRear:       { type: 'Differential fluid rear',    miles: 30000, months: 24 },
+      transferCase:   { type: 'Transfer case fluid',        miles: 30000, months: 24 },
+      uJoints:        { type: 'U-joints grease',            miles: 10000, months: 12 },
+      steeringInspect:{ type: 'Steering inspection',        miles: 10000, months: 12 },
+      oilCooler:      { type: 'Oil cooler / housing inspect', miles: 60000, months: 60, pentastarOnly: true },
+      egrCooler:      { type: 'EGR cooler inspect',         miles: 30000, months: 36, ecodieselOnly: true },
+      tpmsBattery:    { type: 'TPMS sensor',                miles: 0,     months: 120 },
+    };
+
+    function resolveTemplate(key, kind) {
+      const tpl = MAINT_TEMPLATES[key];
+      if (!tpl) return null;
+      const override = kind ? tpl.byEngine?.[kind] : null;
+      return {
+        type: tpl.type,
+        miles: override?.miles ?? tpl.miles,
+        months: override?.months ?? tpl.months,
+      };
+    }
+
+    async function activeVehicle() {
+      if (!activeVehicleId) return null;
+      return (await db.getAll('vehicles')).find(x => x.id === activeVehicleId) || null;
+    }
     async function activeVehicleIsSevere() {
-      if (!activeVehicleId) return false;
-      const v = (await db.getAll('vehicles')).find(x => x.id === activeVehicleId);
+      const v = await activeVehicle();
       return !!(v && v.severeService);
     }
 
+    async function refreshEngineHint() {
+      const hint = document.getElementById('engineHint');
+      if (!hint) return;
+      const v = await activeVehicle();
+      const kind = engineKind(v?.engine);
+      if (!kind) {
+        hint.textContent = t('engineHintUnknown');
+        hint.classList.add('unknown');
+      } else {
+        hint.textContent = `${t('engineHintPrefix')} ${t(ENGINE_LABEL_KEYS[kind])}`;
+        hint.classList.remove('unknown');
+      }
+    }
+
     document.getElementById('mTemplate').addEventListener('change', async (e) => {
-      const tpl = MAINT_TEMPLATES[e.target.value];
+      const v = await activeVehicle();
+      const kind = engineKind(v?.engine);
+      const tpl = resolveTemplate(e.target.value, kind);
       if (!tpl) return;
-      const severe = await activeVehicleIsSevere();
+      const severe = !!(v && v.severeService);
       const miles = tpl.miles ? Math.round(tpl.miles / (severe ? 2 : 1)) : 0;
       const months = tpl.months ? Math.round(tpl.months / (severe ? 2 : 1)) : 0;
       document.getElementById('mType').value = tpl.type;
+      document.getElementById('mType').dispatchEvent(new Event('change'));
       document.getElementById('mIntervalMiles').value = miles || '';
       document.getElementById('mIntervalMonths').value = months || '';
       const details = document.querySelector('.interval-details');
@@ -2103,11 +2236,14 @@
 
       if (!await confirmIfOdometerRegresses(odometer, editState.maintenance)) return;
 
-      // Duplicate detection: same vehicle, same date, same type, odometer within 50 mi
+      // Duplicate detection: same vehicle, same date, same type (case-insensitive),
+      // odometer within 50 mi. Normalizing the type avoids false negatives on
+      // user-typed "Other" entries like "Transfer case drop" vs "transfer case drop".
       if (!editState.maintenance) {
         const all = await db.getAll('maintenance');
-        const typeVal = document.getElementById('mType').value === 'Other' ? document.getElementById('mOtherType').value : document.getElementById('mType').value;
-        const dup = all.some(x => x.vehicleId === activeVehicleId && x.date === date && x.type === typeVal && Math.abs((x.odometer || 0) - odometer) < 50);
+        const rawType = document.getElementById('mType').value === 'Other' ? document.getElementById('mOtherType').value : document.getElementById('mType').value;
+        const typeVal = (rawType || '').trim().toLowerCase();
+        const dup = all.some(x => x.vehicleId === activeVehicleId && x.date === date && (x.type || '').trim().toLowerCase() === typeVal && Math.abs((x.odometer || 0) - odometer) < 50);
         if (dup && !confirm(t('duplicateWarn'))) return;
       }
       
@@ -2158,10 +2294,10 @@
         await db.add('maintenance', data);
         // Follow-up reminders — only when creating new entries
         const spawns = [];
-        if (document.getElementById('mFollowUpRetorque').checked) spawns.push({ type: 'Wheel re-torque', miles: 50, note: 'Auto-scheduled after service' });
-        if (document.getElementById('mFollowUpLift').checked) spawns.push({ type: 'Lift kit re-torque', miles: 500, note: 'Auto-scheduled after service' });
-        if (document.getElementById('mFollowUpAlignment').checked) spawns.push({ type: 'Alignment', miles: 500, note: 'Auto-scheduled after service' });
-        for (const s of spawns) await spawnFollowUp(s, odometer);
+        if (document.getElementById('mFollowUpRetorque').checked) spawns.push({ type: 'Wheel re-torque', miles: 50 });
+        if (document.getElementById('mFollowUpLift').checked) spawns.push({ type: 'Lift kit re-torque', miles: 500 });
+        if (document.getElementById('mFollowUpAlignment').checked) spawns.push({ type: 'Alignment', miles: 500 });
+        for (const s of spawns) await spawnFollowUp(s, odometer, date);
       }
       await bumpVehicleOdometer(odometer);
       maintPhotoDataUrl = null;
@@ -2174,16 +2310,16 @@
       document.getElementById('mDate').focus();
     });
 
-    async function spawnFollowUp({ type, miles, note }, currentOdo) {
+    async function spawnFollowUp({ type, miles }, currentOdo, serviceDate) {
       await db.add('maintenance', {
         id: crypto.randomUUID(),
         vehicleId: activeVehicleId,
-        date: new Date().toISOString().split('T')[0],
+        date: serviceDate || new Date().toISOString().split('T')[0],
         odometer: currentOdo,
         type: type,
         shop: false,
         cost: 0,
-        notes: note,
+        notes: t('followUpAutoNote'),
         intervalMiles: miles,
         intervalMonths: null,
         nextDueMiles: currentOdo + miles,
@@ -2388,6 +2524,7 @@
     async function loadMaintenance() {
       const items = (await db.getAll('maintenance')).filter(m => m.vehicleId === activeVehicleId).sort((a,b) => new Date(b.date) - new Date(a.date));
       renderMaintenanceList(items);
+      await refreshEngineHint();
     }
 
     function renderMaintenanceList(items) {
