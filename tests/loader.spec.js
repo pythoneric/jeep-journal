@@ -71,3 +71,25 @@ test('Drop zone highlights on dragenter', async ({ page }) => {
   });
   await expect(page.locator('#loaderDropZone')).toHaveClass(/drag-over/);
 });
+
+test('Reload Cache button clears caches and reloads the page', async ({ page }) => {
+  await openLoader(page);
+  // Seed a cache and an in-page marker that won't survive a real reload.
+  await page.evaluate(async () => {
+    window.__beforeReload = true;
+    if ('caches' in window) await caches.open('biteric-jeep-test-reload');
+  });
+  await page.click('#clearCacheLoaderBtn');
+  // hardReload shows a toast, then setTimeout(location.reload(), 500). The
+  // in-page marker is gone after a true reload; poll until it's missing.
+  await page.waitForFunction(() => !window.__beforeReload, { timeout: 3000 });
+  // Loader rerenders after the reload
+  await page.waitForSelector('#startFreshBtn');
+  // And the seeded cache should be gone
+  const cacheStillThere = await page.evaluate(async () => {
+    if (!('caches' in window)) return false;
+    const names = await caches.keys();
+    return names.includes('biteric-jeep-test-reload');
+  });
+  expect(cacheStillThere).toBe(false);
+});

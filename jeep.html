@@ -4313,20 +4313,11 @@ ${mods.map(m => `<tr><td>${esc(m.date)}</td><td>${esc(m.category)}</td><td>${esc
       document.getElementById('loader').style.display = 'none';
     });
 
-    document.getElementById('clearCacheLoaderBtn').addEventListener('click', async () => {
-      if ('serviceWorker' in navigator) {
-        const registrations = await navigator.serviceWorker.getRegistrations();
-        for (const registration of registrations) {
-          await registration.unregister();
-        }
-        caches.keys().then(names => {
-          for (const name of names) {
-            caches.delete(name);
-          }
-        });
-        showToast(I18N[lang].cacheCleared || 'Cache cleared');
-      }
-    });
+    // Reload Cache button: mirror the header's refresh — unregister SW,
+    // await-delete caches, then reload. The old inline handler skipped the
+    // reload, fire-and-forgot the cache delete, and hid the toast behind SW
+    // support, so on the loader it looked like nothing happened.
+    document.getElementById('clearCacheLoaderBtn').addEventListener('click', hardReload);
 
     document.querySelectorAll('.tab').forEach(tab => {
       tab.addEventListener('click', () => { haptic(4); switchTab(tab.dataset.tab); });
