@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#141a23" id="themeColorMeta">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="BitEric Jeep">
   <title>BitEric Jeep</title>
@@ -727,7 +728,7 @@
             <input type="text" id="vTransferCase" data-i18n-placeholder="transferCasePlaceholder" placeholder="Transfer case (e.g. Rock-Trac, NV241)">
             <input type="text" id="vAxleRatio" list="axleRatioOptions" data-i18n-placeholder="axleRatioPlaceholder" placeholder="Axle ratio (e.g. 4.10)">
             <input type="text" id="vTireSize" data-i18n-placeholder="tireSizePlaceholder" placeholder='Tire size (e.g. 35x12.50R17)'>
-            <input type="text" id="vLiftHeight" data-i18n-placeholder="liftHeightPlaceholder" placeholder='Lift (e.g. 2.5")'>
+            <input type="text" id="vLiftHeight" data-i18n-placeholder="liftHeightPlaceholder" placeholder="Lift (e.g. 2.5&quot;)">
           </details>
           <label class="severe-service-label"><input type="checkbox" id="vSevereService"> <span data-i18n="severeService">Severe service (halves template intervals — dust, water, low-range, towing)</span></label>
           <button type="submit" class="btn" data-i18n="addVehicleBtn">Add Vehicle</button>
@@ -1913,16 +1914,16 @@
       const loaderEl = document.getElementById('loader');
       const appRunning = loaderEl && loaderEl.style.display === 'none';
       if (appRunning) {
-        try { await loadDashboard(); } catch {}
-        try { await loadMaintenance(); } catch {}
-        try { await loadFuel(); } catch {}
-        try { await loadMods(); } catch {}
-        try { await loadParts(); } catch {}
-        try { await loadTrails(); } catch {}
-        try { refreshInstallStatus(); } catch {}
-        try { refreshCacheInfo(); } catch {}
+        try { await loadDashboard(); } catch (err) { console.error('refresh loadDashboard', err); }
+        try { await loadMaintenance(); } catch (err) { console.error('refresh loadMaintenance', err); }
+        try { await loadFuel(); } catch (err) { console.error('refresh loadFuel', err); }
+        try { await loadMods(); } catch (err) { console.error('refresh loadMods', err); }
+        try { await loadParts(); } catch (err) { console.error('refresh loadParts', err); }
+        try { await loadTrails(); } catch (err) { console.error('refresh loadTrails', err); }
+        try { refreshInstallStatus(); } catch (err) { console.error('refresh installStatus', err); }
+        try { refreshCacheInfo(); } catch (err) { console.error('refresh cacheInfo', err); }
       } else {
-        try { await checkSavedData(); } catch {}
+        try { await checkSavedData(); } catch (err) { console.error('refresh checkSavedData', err); }
       }
     }
 
@@ -2142,12 +2143,12 @@
     // the dashboard maintenance-by-type donut. Keyed off the option values in
     // the Maintenance type dropdown; unknown types land in "Other".
     function maintTypeCategory(type) {
-      const t = (type || '').toLowerCase();
-      if (/oil|coolant|brake fluid|transmission fluid|differential fluid|transfer case fluid|power steering fluid/.test(t)) return 'Fluids';
-      if (/brake pads|brake rotors|brake caliper/.test(t)) return 'Brakes';
-      if (/tire rotation|tire replacement|alignment|wheel re-torque|wheel bearing|tpms/.test(t)) return 'Tires/Wheels';
-      if (/u-joints|ball joints|tie rod|track bar|steering|control arm|lift kit|body mount|skid plate/.test(t)) return 'Drivetrain';
-      if (/air filter|cabin filter|spark plugs|belts|hoses|oil cooler|egr/.test(t)) return 'Engine/Filters';
+      const s = (type || '').toLowerCase();
+      if (/oil|coolant|brake fluid|transmission fluid|differential fluid|transfer case fluid|power steering fluid/.test(s)) return 'Fluids';
+      if (/brake pads|brake rotors|brake caliper/.test(s)) return 'Brakes';
+      if (/tire rotation|tire replacement|alignment|wheel re-torque|wheel bearing|tpms/.test(s)) return 'Tires/Wheels';
+      if (/u-joints|ball joints|tie rod|track bar|steering|control arm|lift kit|body mount|skid plate/.test(s)) return 'Drivetrain';
+      if (/air filter|cabin filter|spark plugs|belts|hoses|oil cooler|egr/.test(s)) return 'Engine/Filters';
       return 'Other';
     }
     const MAINT_CAT_I18N = {
@@ -2217,11 +2218,11 @@
       return `${ctx.dataset.label || ''} ${currencySym()}${(+v).toFixed(2)}`.trim();
     }
 
-    // Set Chart.js global defaults once. Slightly larger font makes the
-    // legends/axis labels legible on phones; no dependency bump.
+    // Slightly larger font keeps chart legends/axis labels legible on phones.
+    // Font-family is inherited from body (Syne) — not overridden here; the
+    // previous override named Inter, which isn't loaded.
     if (window.Chart?.defaults) {
       Chart.defaults.font.size = 13;
-      Chart.defaults.font.family = "'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif";
     }
 
     // Create once, update thereafter. Destroying and recreating a Chart on
@@ -2244,7 +2245,12 @@
       if (!vehicle.purchasePrice || !vehicle.purchaseDate) return null;
       const years = (Date.now() - new Date(vehicle.purchaseDate).getTime()) / (365.25 * 24 * 3600 * 1000);
       if (years < 0) return { value: vehicle.purchasePrice, manual: false };
-      return { value: vehicle.purchasePrice * Math.pow(0.85, years), manual: false };
+      // Floor at 10% of purchase price — Wranglers hold residual value better
+      // than the 15%/yr compounding alone suggests, and a salvage Jeep is still
+      // worth real money. Prevents 20-year-old trucks from reading as $300.
+      const depreciated = vehicle.purchasePrice * Math.pow(0.85, years);
+      const floor = vehicle.purchasePrice * 0.10;
+      return { value: Math.max(depreciated, floor), manual: false };
     }
 
     async function loadDashboard() {
@@ -3645,7 +3651,6 @@
       const fuelTotal = fuel.reduce((s, f) => s + f.cost, 0);
       const modTotal = mods.reduce((s, m) => s + (m.cost || 0), 0);
       const fuelGallons = fuel.reduce((s, f) => s + f.gallons, 0);
-      const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
       const html = `<!DOCTYPE html><html lang="${lang}"><head><meta charset="UTF-8"><title>${t('reportTitle')}</title>
 <style>
   body { font-family: 'Segoe UI', Arial, sans-serif; color: #111; padding: 2rem; max-width: 800px; margin: 0 auto; }
@@ -3665,8 +3670,8 @@
 <p class="meta">${t('reportGenerated')}: ${new Date().toLocaleString()}</p>
 <button onclick="window.print()">${t('reportPrint')}</button>
 <h2>${t('reportVehicle')}</h2>
-<p><strong>${esc(vehicle.nickname)}</strong> — ${esc(vehicle.year)} ${esc(vehicle.make)} ${esc(vehicle.model)} ${esc(vehicle.trim || '')}</p>
-<p class="meta">VIN: ${esc(vehicle.vin || '—')} · ${t('reportOdometer')}: ${esc(vehicle.odometer)} mi${vehicle.purchaseDate ? ' · Purchased: ' + esc(vehicle.purchaseDate) : ''}${vehicle.purchasePrice ? ' · Purchase price: ' + currencySym() + vehicle.purchasePrice.toLocaleString() : ''}</p>
+<p><strong>${escHtml(vehicle.nickname)}</strong> — ${escHtml(vehicle.year)} ${escHtml(vehicle.make)} ${escHtml(vehicle.model)} ${escHtml(vehicle.trim || '')}</p>
+<p class="meta">VIN: ${escHtml(vehicle.vin || '—')} · ${t('reportOdometer')}: ${escHtml(vehicle.odometer)} mi${vehicle.purchaseDate ? ' · Purchased: ' + escHtml(vehicle.purchaseDate) : ''}${vehicle.purchasePrice ? ' · Purchase price: ' + currencySym() + vehicle.purchasePrice.toLocaleString() : ''}</p>
 <h2>${t('reportTotals')}</h2>
 <div class="totals">
   <div class="total-box"><span class="meta">${t('reportMaintenance')}</span><strong>${currencySym()}${maintTotal.toFixed(2)}</strong><span class="meta">${maint.length} entries</span></div>
@@ -3675,11 +3680,11 @@
 </div>
 <h2>${t('reportMaintenance')}</h2>
 <table><thead><tr><th>Date</th><th>${t('reportOdometer')}</th><th>Type</th><th>Shop/DIY</th><th>Cost</th><th>Notes</th></tr></thead><tbody>
-${maint.map(m => `<tr><td>${esc(m.date)}</td><td>${esc(m.odometer)}</td><td>${esc(m.type)}</td><td>${m.shop ? 'Shop' : 'DIY'}</td><td>${currencySym()}${(m.cost||0).toFixed(2)}</td><td>${esc(m.notes || '')}</td></tr>`).join('')}
+${maint.map(m => `<tr><td>${escHtml(m.date)}</td><td>${escHtml(m.odometer)}</td><td>${escHtml(m.type)}</td><td>${m.shop ? 'Shop' : 'DIY'}</td><td>${currencySym()}${(m.cost||0).toFixed(2)}</td><td>${escHtml(m.notes || '')}</td></tr>`).join('')}
 </tbody></table>
 <h2>${t('reportMods')}</h2>
 <table><thead><tr><th>Date</th><th>Category</th><th>Part</th><th>Brand</th><th>Cost</th><th>Installed</th></tr></thead><tbody>
-${mods.map(m => `<tr><td>${esc(m.date)}</td><td>${esc(m.category)}</td><td>${esc(m.part)}</td><td>${esc(m.brand || '')}</td><td>${currencySym()}${(m.cost||0).toFixed(2)}</td><td>${m.installed ? 'Yes' : 'No'}</td></tr>`).join('')}
+${mods.map(m => `<tr><td>${escHtml(m.date)}</td><td>${escHtml(m.category)}</td><td>${escHtml(m.part)}</td><td>${escHtml(m.brand || '')}</td><td>${currencySym()}${(m.cost||0).toFixed(2)}</td><td>${m.installed ? 'Yes' : 'No'}</td></tr>`).join('')}
 </tbody></table>
 </body></html>`;
       const win = window.open('', '_blank');
@@ -4525,11 +4530,11 @@ ${mods.map(m => `<tr><td>${esc(m.date)}</td><td>${esc(m.category)}</td><td>${esc
       await loadVehicles();
       // Re-run every tab's loader so the currently-visible tab reflects the
       // imported data without requiring a tab switch.
-      try { await loadMaintenance(); } catch {}
-      try { await loadFuel(); } catch {}
-      try { await loadMods(); } catch {}
-      try { await loadParts(); } catch {}
-      try { await loadTrails(); } catch {}
+      try { await loadMaintenance(); } catch (err) { console.error('import loadMaintenance', err); }
+      try { await loadFuel(); } catch (err) { console.error('import loadFuel', err); }
+      try { await loadMods(); } catch (err) { console.error('import loadMods', err); }
+      try { await loadParts(); } catch (err) { console.error('import loadParts', err); }
+      try { await loadTrails(); } catch (err) { console.error('import loadTrails', err); }
       // Reapply restored language last — sweeps i18n-tagged DOM elements
       // so labels reflect the backup's language.
       if (restoredLang) setLang(restoredLang);
