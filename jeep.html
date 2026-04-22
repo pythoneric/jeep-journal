@@ -64,7 +64,6 @@
     @media (max-width: 480px) { .tab { font-size: 0.65rem; } }
     .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
     .g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
-    .g4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 1rem; }
     .card { background: var(--card); padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; }
     body.light .card { background: var(--light-card); border: 1px solid var(--light-border); }
     form { display: flex; flex-direction: column; gap: 1rem; }
@@ -77,7 +76,7 @@
     .hidden { display: none !important; }
     .chart { max-height: 300px; }
     @media (max-width: 768px) {
-      .g2, .g3, .g4 { grid-template-columns: 1fr; }
+      .g2, .g3 { grid-template-columns: 1fr; }
       .controls { gap: 0.5rem; justify-content: flex-end; }
       .content { padding: 0.75rem; }
       .card { padding: 0.85rem; }
@@ -152,7 +151,6 @@
     .drop-zone-text { font-weight: 700; font-size: 0.95rem; }
     .drop-zone-sub { font-size: 0.78rem; opacity: 0.7; margin-top: 0.2rem; }
     .loader-options { display: flex; flex-direction: column; gap: 0.6rem; }
-    .loader-demos { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
     button.btn-outline, body.light button.btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); padding: 0.75rem 0.5rem; border-radius: 0.5rem; cursor: pointer; font-size: 0.9rem; }
     body.light button.btn-outline { border-color: var(--light-border); color: var(--light-text); }
     button.btn-outline:hover { border-color: var(--accent); color: var(--accent); }
@@ -1007,8 +1005,6 @@
         noPriceSet: "Set purchase price in Settings",
         ofBudget: "of budget",
         depreciation: "depreciation",
-        goalsBudget: "Goals & Budget (active vehicle)",
-        saveGoals: "Save goals",
         savedMsg: "Saved",
         reportTitle: "Service History Report",
         reportVehicle: "Vehicle",
@@ -1116,7 +1112,6 @@
         fuelWarnLowOctane: "Your engine requires premium (91+). Save anyway?",
         fuelWarnE85Jeep: "Jeep Wrangler/Gladiator models are NOT flex-fuel — E85 will damage the fuel system. Save anyway?",
         mpgChartLabel: "MPG",
-        costPerMile: "Cost per mile",
         milesDriven: "miles driven",
         noMileageYet: "Need at least one fuel entry for $/mi",
         cacheStatus: "Cache status",
@@ -1217,7 +1212,6 @@
         fuelPremium: "Premium (91+)",
         fuelDiesel: "Diesel",
         fuelE85: "E85",
-        fuelElectric: "Electric (kWh)",
         drivingPlaceholder: "Driving conditions…",
         drivingHighway: "Highway",
         drivingMixed: "Mixed",
@@ -1256,7 +1250,6 @@
         noTrails: "No trail runs logged yet.",
         noTrailsMatch: "No trails match your search.",
         trailsAutoReminder: "Auto-scheduled: diff + transfer case fluid check",
-        trailsAutoTireReminder: "Auto-scheduled: wheel re-torque + lug nut check",
         trailOdometerLabel: "Odometer at start (mi)",
         trailWaterDepth: "Water depth",
         trailWaterDepthShallow: "Shallow (ankle / knee)",
@@ -1430,8 +1423,6 @@
         noPriceSet: "Configura el precio de compra",
         ofBudget: "del presupuesto",
         depreciation: "depreciación",
-        goalsBudget: "Metas y presupuesto (vehículo activo)",
-        saveGoals: "Guardar metas",
         savedMsg: "Guardado",
         reportTitle: "Reporte de Historial de Servicio",
         reportVehicle: "Vehículo",
@@ -1539,7 +1530,6 @@
         fuelWarnLowOctane: "Tu motor requiere premium (91+). ¿Guardar de todos modos?",
         fuelWarnE85Jeep: "Jeep Wrangler/Gladiator NO es flex-fuel — E85 dañará el sistema. ¿Guardar de todos modos?",
         mpgChartLabel: "MPG",
-        costPerMile: "Costo por milla",
         milesDriven: "millas recorridas",
         noMileageYet: "Se necesita al menos una entrada de combustible para $/mi",
         cacheStatus: "Estado del caché",
@@ -1640,7 +1630,6 @@
         fuelPremium: "Premium (91+)",
         fuelDiesel: "Diésel",
         fuelE85: "E85",
-        fuelElectric: "Eléctrico (kWh)",
         drivingPlaceholder: "Condiciones de manejo…",
         drivingHighway: "Carretera",
         drivingMixed: "Mixto",
@@ -1679,7 +1668,6 @@
         noTrails: "Aún no hay rutas registradas.",
         noTrailsMatch: "Sin rutas que coincidan.",
         trailsAutoReminder: "Agendado: revisar diferenciales + caja transfer",
-        trailsAutoTireReminder: "Agendado: re-torque de ruedas + tuercas",
         trailOdometerLabel: "Odómetro al inicio (mi)",
         trailWaterDepth: "Profundidad del agua",
         trailWaterDepthShallow: "Poca (tobillo / rodilla)",
@@ -2651,7 +2639,6 @@
         intervalMonths: intervalMonths || null,
         nextDueMiles: nextDueMiles,
         nextDueDate: nextDueDate,
-        reminderShown: false,
         photo: maintPhotoDataUrl,
         padFront: +document.getElementById('mPadFront').value || null,
         padRear: +document.getElementById('mPadRear').value || null,
@@ -2702,7 +2689,6 @@
         intervalMonths: null,
         nextDueMiles: miles ? (currentOdo || 0) + miles : null,
         nextDueDate: nextDueDate,
-        reminderShown: false,
         reminderDismissed: false,
         photo: null,
         autoGenerated: true
@@ -3572,7 +3558,7 @@ ${mods.map(m => `<tr><td>${esc(m.date)}</td><td>${esc(m.category)}</td><td>${esc
       container.innerHTML = Object.entries(grouped).map(([cat, ms]) => `
         <h3>${escHtml(cat)}</h3>
         <ul class="entry-list">${ms.map(m => {
-          const isShop = (typeof m.shop === 'boolean') ? m.shop : (m.installedBy && /shop/i.test(m.installedBy));
+          const isShop = !!m.shop;
           const removed = !m.installed
             ? (m.removedDate
               ? ` (${t('removedOn')} ${escHtml(m.removedDate)})`
@@ -3614,8 +3600,7 @@ ${mods.map(m => `<tr><td>${esc(m.date)}</td><td>${esc(m.category)}</td><td>${esc
         document.getElementById('modPart').value = m.part || '';
         document.getElementById('modBrand').value = m.brand || '';
         document.getElementById('modCost').value = m.cost || '';
-        const legacyShop = (typeof m.shop === 'boolean') ? m.shop : (m.installedBy && /shop/i.test(m.installedBy)) || false;
-        document.getElementById('modShop').checked = legacyShop;
+        document.getElementById('modShop').checked = !!m.shop;
         document.getElementById('modNotes').value = m.notes || '';
         document.getElementById('modInstalled').checked = !!m.installed;
         document.getElementById('modRemovedDate').value = m.removedDate || '';
@@ -4584,19 +4569,19 @@ ${mods.map(m => `<tr><td>${esc(m.date)}</td><td>${esc(m.category)}</td><td>${esc
       ];
       for (const entry of demoFuel) await db.add('fuel', entry);
       const demoMods = [
-        { id: crypto.randomUUID(), vehicleId: demoVehicle.id, date: '2023-04-01', odometer: 7800,  category: 'Suspension', part: 'Lift Kit', brand: 'Rubicon Express', cost: 1900, installedBy: 'Shop', notes: '2.5" lift for better ground clearance', installed: true },
-        { id: crypto.randomUUID(), vehicleId: demoVehicle.id, date: '2023-04-15', odometer: 8100,  category: 'Bumper', part: 'Front Bumper', brand: 'Mopar', cost: 1200, installedBy: 'Shop', notes: 'Stainless steel front bumper upgrade', installed: true },
-        { id: crypto.randomUUID(), vehicleId: demoVehicle.id, date: '2023-05-20', odometer: 8900,  category: 'Tires/Wheels', part: 'All-Terrain Tires', brand: 'BFGoodrich', cost: 1400, installedBy: 'Shop', notes: '33" KO2 tires for off-road capability', installed: true },
-        { id: crypto.randomUUID(), vehicleId: demoVehicle.id, date: '2023-06-01', odometer: 9300,  category: 'Armor', part: 'Rock Rails', brand: 'ARB', cost: 850, installedBy: 'Shop', notes: 'Full length rock protection', installed: true },
-        { id: crypto.randomUUID(), vehicleId: demoVehicle.id, date: '2023-07-10', odometer: 10100, category: 'Recovery', part: 'Tow Hooks', brand: 'ARB', cost: 180, installedBy: 'DIY', notes: 'Recovery points front and rear', installed: true },
-        { id: crypto.randomUUID(), vehicleId: demoVehicle.id, date: '2023-08-20', odometer: 10500, category: 'Lighting', part: 'LED Light Bar', brand: 'Rigid Industries', cost: 650, installedBy: 'DIY', notes: '30" LED bar for night driving', installed: true },
-        { id: crypto.randomUUID(), vehicleId: demoVehicle.id, date: '2023-09-05', odometer: 10700, category: 'Lighting', part: 'LED Fog Lights', brand: 'Rigid Industries', cost: 350, installedBy: 'Shop', notes: 'Improved visibility in fog', installed: true },
-        { id: crypto.randomUUID(), vehicleId: demoVehicle.id, date: '2023-10-10', odometer: 11000, category: 'Recovery', part: 'Winch', brand: 'Warn', cost: 1100, installedBy: 'Shop', notes: '9500lb winch with synthetic rope', installed: true },
-        { id: crypto.randomUUID(), vehicleId: demoVehicle.id, date: '2023-11-15', odometer: 11700, category: 'Interior', part: 'Tonneau Cover', brand: 'Truxedo', cost: 450, installedBy: 'DIY', notes: 'Hard tonneau cover for bed protection', installed: true },
-        { id: crypto.randomUUID(), vehicleId: demoVehicle.id, date: '2024-01-05', odometer: 12900, category: 'Interior', part: 'Seat Covers', brand: 'WeatherTech', cost: 180, installedBy: 'DIY', notes: 'All-weather seat protection', installed: true },
-        { id: crypto.randomUUID(), vehicleId: demoVehicle.id, date: '2024-02-10', odometer: 13400, category: 'Electrical', part: 'Backup Camera', brand: 'Mopar', cost: 280, installedBy: 'Shop', notes: 'Wireless backup camera system', installed: true },
-        { id: crypto.randomUUID(), vehicleId: demoVehicle.id, date: '2024-03-01', odometer: 13700, category: 'Electrical', part: 'Aux Battery', brand: 'Optima', cost: 220, installedBy: 'DIY', notes: 'Secondary battery for accessories', installed: true },
-        { id: crypto.randomUUID(), vehicleId: demoVehicle.id, date: '2024-05-01', odometer: 14500, category: 'Audio', part: 'Subwoofer', brand: 'Kicker', cost: 320, installedBy: 'DIY', notes: '10" subwoofer for better audio', installed: true }
+        { id: crypto.randomUUID(), vehicleId: demoVehicle.id, date: '2023-04-01', odometer: 7800,  category: 'Suspension', part: 'Lift Kit', brand: 'Rubicon Express', cost: 1900, shop: true, notes: '2.5" lift for better ground clearance', installed: true },
+        { id: crypto.randomUUID(), vehicleId: demoVehicle.id, date: '2023-04-15', odometer: 8100,  category: 'Bumper', part: 'Front Bumper', brand: 'Mopar', cost: 1200, shop: true, notes: 'Stainless steel front bumper upgrade', installed: true },
+        { id: crypto.randomUUID(), vehicleId: demoVehicle.id, date: '2023-05-20', odometer: 8900,  category: 'Tires/Wheels', part: 'All-Terrain Tires', brand: 'BFGoodrich', cost: 1400, shop: true, notes: '33" KO2 tires for off-road capability', installed: true },
+        { id: crypto.randomUUID(), vehicleId: demoVehicle.id, date: '2023-06-01', odometer: 9300,  category: 'Armor', part: 'Rock Rails', brand: 'ARB', cost: 850, shop: true, notes: 'Full length rock protection', installed: true },
+        { id: crypto.randomUUID(), vehicleId: demoVehicle.id, date: '2023-07-10', odometer: 10100, category: 'Recovery', part: 'Tow Hooks', brand: 'ARB', cost: 180, shop: false, notes: 'Recovery points front and rear', installed: true },
+        { id: crypto.randomUUID(), vehicleId: demoVehicle.id, date: '2023-08-20', odometer: 10500, category: 'Lighting', part: 'LED Light Bar', brand: 'Rigid Industries', cost: 650, shop: false, notes: '30" LED bar for night driving', installed: true },
+        { id: crypto.randomUUID(), vehicleId: demoVehicle.id, date: '2023-09-05', odometer: 10700, category: 'Lighting', part: 'LED Fog Lights', brand: 'Rigid Industries', cost: 350, shop: true, notes: 'Improved visibility in fog', installed: true },
+        { id: crypto.randomUUID(), vehicleId: demoVehicle.id, date: '2023-10-10', odometer: 11000, category: 'Recovery', part: 'Winch', brand: 'Warn', cost: 1100, shop: true, notes: '9500lb winch with synthetic rope', installed: true },
+        { id: crypto.randomUUID(), vehicleId: demoVehicle.id, date: '2023-11-15', odometer: 11700, category: 'Interior', part: 'Tonneau Cover', brand: 'Truxedo', cost: 450, shop: false, notes: 'Hard tonneau cover for bed protection', installed: true },
+        { id: crypto.randomUUID(), vehicleId: demoVehicle.id, date: '2024-01-05', odometer: 12900, category: 'Interior', part: 'Seat Covers', brand: 'WeatherTech', cost: 180, shop: false, notes: 'All-weather seat protection', installed: true },
+        { id: crypto.randomUUID(), vehicleId: demoVehicle.id, date: '2024-02-10', odometer: 13400, category: 'Electrical', part: 'Backup Camera', brand: 'Mopar', cost: 280, shop: true, notes: 'Wireless backup camera system', installed: true },
+        { id: crypto.randomUUID(), vehicleId: demoVehicle.id, date: '2024-03-01', odometer: 13700, category: 'Electrical', part: 'Aux Battery', brand: 'Optima', cost: 220, shop: false, notes: 'Secondary battery for accessories', installed: true },
+        { id: crypto.randomUUID(), vehicleId: demoVehicle.id, date: '2024-05-01', odometer: 14500, category: 'Audio', part: 'Subwoofer', brand: 'Kicker', cost: 320, shop: false, notes: '10" subwoofer for better audio', installed: true }
       ];
       for (const entry of demoMods) await db.add('mods', entry);
       const demoParts = [
