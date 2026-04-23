@@ -390,6 +390,7 @@
     <button type="button" class="tab" data-tab="mods" id="tab-mods" role="tab" aria-selected="false" aria-controls="mods" tabindex="-1"><span class="tab-icon" aria-hidden="true">✨</span><span data-i18n="tabMods">Mods</span></button>
     <button type="button" class="tab" data-tab="trails" id="tab-trails" role="tab" aria-selected="false" aria-controls="trails" tabindex="-1"><span class="tab-icon" aria-hidden="true">🏔</span><span data-i18n="tabTrails">Trails</span></button>
     <button type="button" class="tab" data-tab="parts" id="tab-parts" role="tab" aria-selected="false" aria-controls="parts" tabindex="-1"><span class="tab-icon" aria-hidden="true">📦</span><span data-i18n="tabParts">Parts</span></button>
+    <button type="button" class="tab" data-tab="docs" id="tab-docs" role="tab" aria-selected="false" aria-controls="docs" tabindex="-1"><span class="tab-icon" aria-hidden="true">📄</span><span data-i18n="tabDocs">Docs</span></button>
     <button type="button" class="tab" data-tab="settings" id="tab-settings" role="tab" aria-selected="false" aria-controls="settings" tabindex="-1"><span class="tab-icon" aria-hidden="true">⚙️</span><span data-i18n="tabSettings">Settings</span></button>
   </nav>
   <main id="content" class="content">
@@ -415,6 +416,14 @@
         </div>
         <div class="card-content">
           <ul id="serviceReminders"></ul>
+        </div>
+      </div>
+      <div class="card collapsible" data-section="doc-expirations">
+        <div class="card-header">
+          <h3 data-i18n="cardDocExpirations">Document Expirations</h3>
+        </div>
+        <div class="card-content">
+          <ul id="docExpirations"></ul>
         </div>
       </div>
       <div class="card collapsible" data-section="vehicle">
@@ -852,6 +861,37 @@
         <div id="partsList"></div>
       </div>
     </div>
+    <div id="docs" class="tab-content hidden" role="tabpanel" aria-labelledby="tab-docs">
+      <div class="card">
+        <h2 data-i18n="docsTitle">Documents &amp; Expirations</h2>
+        <p class="trail-hint" data-i18n="docsHint">Registration, insurance, inspections, warranties — anything with an expiration date you can't afford to forget.</p>
+        <form id="docsForm">
+          <select id="docType" required>
+            <option value="registration" data-i18n="docTypeRegistration">Registration</option>
+            <option value="insurance" data-i18n="docTypeInsurance">Insurance</option>
+            <option value="inspection" data-i18n="docTypeInspection">Inspection</option>
+            <option value="warranty" data-i18n="docTypeWarranty">Warranty</option>
+            <option value="smog" data-i18n="docTypeSmog">Smog / Emissions</option>
+            <option value="loan" data-i18n="docTypeLoan">Loan</option>
+            <option value="lease" data-i18n="docTypeLease">Lease</option>
+            <option value="other" data-i18n="docTypeOther">Other</option>
+          </select>
+          <input type="text" id="docName" data-i18n-placeholder="docNamePh" placeholder="Name / description" required>
+          <input type="text" id="docProvider" data-i18n-placeholder="docProviderPh" placeholder="Provider (optional)">
+          <input type="text" id="docPolicyNumber" data-i18n-placeholder="docPolicyNumberPh" placeholder="Policy / reference number (optional)">
+          <input type="date" id="docIssueDate" data-i18n-placeholder="docIssueDatePh" placeholder="Issue date (optional)">
+          <input type="date" id="docExpirationDate" required data-i18n-placeholder="docExpirationDatePh" placeholder="Expiration date">
+          <input type="number" step="0.01" id="docCost" min="0" data-i18n-placeholder="docCostPh" placeholder="Cost (optional)">
+          <input type="number" id="docReminderDays" min="1" max="365" value="30" data-i18n-placeholder="docReminderDaysPh" placeholder="Warn me this many days before expiration">
+          <textarea id="docNotes" data-i18n-placeholder="docNotesPh" placeholder="Notes"></textarea>
+          <input type="file" id="docPhotoFile" accept="image/*">
+          <img id="docPhotoPreview" class="photo-preview hidden" alt="">
+          <button type="submit" class="btn" data-i18n="addDoc">Add Document</button>
+        </form>
+        <div class="search-wrap"><input type="search" id="docsSearch" class="search-input" data-i18n-placeholder="searchPlaceholder" placeholder="Search…"><button type="button" class="search-clear hidden" aria-label="Clear search">✕</button></div>
+        <div id="docsList"></div>
+      </div>
+    </div>
     <div id="settings" class="tab-content hidden" role="tabpanel" aria-labelledby="tab-settings">
       <div class="card">
         <h2 data-i18n="settings">Settings</h2>
@@ -988,7 +1028,7 @@
     <div class="modal-card">
       <h3 id="shortcutsTitle" data-i18n="shortcutsTitle">Keyboard shortcuts</h3>
       <dl>
-        <dt>1–7</dt><dd data-i18n="shortcutTabs">Switch tabs</dd>
+        <dt>1–8</dt><dd data-i18n="shortcutTabs">Switch tabs</dd>
         <dt>Esc</dt><dd data-i18n="shortcutEscape">Cancel edit</dd>
         <dt>?</dt><dd data-i18n="shortcutHelp">Show this help</dd>
       </dl>
@@ -1097,6 +1137,7 @@
         tabMods: "Mods",
         tabParts: "Parts",
         tabTrails: "Trails",
+        tabDocs: "Docs",
         tabSettings: "Settings",
         vehicleCard: "Vehicle",
         noVehicleYet: "No vehicle yet — add one in Settings",
@@ -1482,6 +1523,7 @@
         savedInfoFuel: "fuel",
         savedInfoMods: "mods",
         savedInfoParts: "parts",
+        savedInfoDocs: "documents",
         confirmDeleteSaved: "Delete all saved data? This cannot be undone.",
         exportedBackup: "Backup downloaded.",
         currencyHeading: "Currency",
@@ -1500,7 +1542,41 @@
         fabActions: "Quick actions",
         fabAddFuel: "Add Fuel",
         fabAddMaintenance: "Add Maintenance",
-        fabLogTrail: "Log Trail"
+        fabLogTrail: "Log Trail",
+        docsTitle: "Documents & Expirations",
+        docsHint: "Registration, insurance, inspections, warranties — anything with an expiration date you can't afford to forget.",
+        docTypeRegistration: "Registration",
+        docTypeInsurance: "Insurance",
+        docTypeInspection: "Inspection",
+        docTypeWarranty: "Warranty",
+        docTypeSmog: "Smog / Emissions",
+        docTypeLoan: "Loan",
+        docTypeLease: "Lease",
+        docTypeOther: "Other",
+        docNamePh: "Name / description",
+        docProviderPh: "Provider (optional)",
+        docPolicyNumberPh: "Policy / reference number (optional)",
+        docIssueDatePh: "Issue date (optional)",
+        docExpirationDatePh: "Expiration date",
+        docCostPh: "Cost ({cur}, optional)",
+        docReminderDaysPh: "Warn me this many days before expiration",
+        docNotesPh: "Notes",
+        docPhotoLabel: "Document photo (optional)",
+        addDoc: "Add Document",
+        editDoc: "Edit Document",
+        updateDoc: "Update Document",
+        noDocs: "No documents yet. Add registration, insurance, inspection dates…",
+        noDocsMatch: "No documents match your search.",
+        docExpired: "Expired {d} days ago",
+        docExpiresIn: "Expires in {d} days",
+        docExpiresToday: "Expires today",
+        docValid: "Valid",
+        docProviderLabel: "Provider",
+        docPolicyLabel: "Policy",
+        docIssuedLabel: "Issued",
+        docExpiresLabel: "Expires",
+        cardDocExpirations: "Document Expirations",
+        noDocExpirations: "No documents expiring soon."
       },
       es: {
         appTitle: "BitEric Jeep",
@@ -1514,6 +1590,7 @@
         tabMods: "Mods",
         tabParts: "Piezas",
         tabTrails: "Rutas",
+        tabDocs: "Docs",
         tabSettings: "Configuración",
         vehicleCard: "Vehículo",
         noVehicleYet: "Sin vehículo — agrega uno en Configuración",
@@ -1899,6 +1976,7 @@
         savedInfoFuel: "combustible",
         savedInfoMods: "mods",
         savedInfoParts: "piezas",
+        savedInfoDocs: "documentos",
         confirmDeleteSaved: "¿Eliminar todos los datos guardados? No se puede deshacer.",
         exportedBackup: "Respaldo descargado.",
         currencyHeading: "Moneda",
@@ -1917,7 +1995,41 @@
         fabActions: "Acciones rápidas",
         fabAddFuel: "Agregar combustible",
         fabAddMaintenance: "Agregar mantenimiento",
-        fabLogTrail: "Registrar ruta"
+        fabLogTrail: "Registrar ruta",
+        docsTitle: "Documentos y vencimientos",
+        docsHint: "Matrícula, seguro, revisión técnica, garantías — cualquier cosa con fecha de vencimiento que no puedes olvidar.",
+        docTypeRegistration: "Matrícula",
+        docTypeInsurance: "Seguro",
+        docTypeInspection: "Revisión técnica",
+        docTypeWarranty: "Garantía",
+        docTypeSmog: "Emisiones / smog",
+        docTypeLoan: "Préstamo",
+        docTypeLease: "Leasing",
+        docTypeOther: "Otro",
+        docNamePh: "Nombre / descripción",
+        docProviderPh: "Proveedor (opcional)",
+        docPolicyNumberPh: "Número de póliza / referencia (opcional)",
+        docIssueDatePh: "Fecha de emisión (opcional)",
+        docExpirationDatePh: "Fecha de vencimiento",
+        docCostPh: "Costo ({cur}, opcional)",
+        docReminderDaysPh: "Avísame con esta cantidad de días de anticipación",
+        docNotesPh: "Notas",
+        docPhotoLabel: "Foto del documento (opcional)",
+        addDoc: "Agregar documento",
+        editDoc: "Editar documento",
+        updateDoc: "Actualizar documento",
+        noDocs: "Aún no hay documentos. Agrega matrícula, seguro, fechas de revisión…",
+        noDocsMatch: "Ningún documento coincide con tu búsqueda.",
+        docExpired: "Venció hace {d} días",
+        docExpiresIn: "Vence en {d} días",
+        docExpiresToday: "Vence hoy",
+        docValid: "Vigente",
+        docProviderLabel: "Proveedor",
+        docPolicyLabel: "Póliza",
+        docIssuedLabel: "Emitido",
+        docExpiresLabel: "Vence",
+        cardDocExpirations: "Vencimientos de documentos",
+        noDocExpirations: "Ningún documento próximo a vencer."
       }
     };
 
@@ -1930,7 +2042,7 @@
     let activeVehicleId = localStorage.getItem('activeVehicleId');
     let lastTab = localStorage.getItem('lastTab') || 'dashboard';
 
-    const DB_VERSION = 3;
+    const DB_VERSION = 4;
 
     // IndexedDB wrapper
     class DB {
@@ -2051,10 +2163,11 @@
       { name: 'fuel', keyPath: 'id', indexes: [{ name: 'vehicleId', keyPath: 'vehicleId' }] },
       { name: 'mods', keyPath: 'id', indexes: [{ name: 'vehicleId', keyPath: 'vehicleId' }] },
       { name: 'parts', keyPath: 'id', indexes: [{ name: 'vehicleId', keyPath: 'vehicleId' }] },
-      { name: 'trails', keyPath: 'id', indexes: [{ name: 'vehicleId', keyPath: 'vehicleId' }] }
+      { name: 'trails', keyPath: 'id', indexes: [{ name: 'vehicleId', keyPath: 'vehicleId' }] },
+      { name: 'documents', keyPath: 'id', indexes: [{ name: 'vehicleId', keyPath: 'vehicleId' }] }
     ];
     const ALL_STORES = stores.map(s => s.name);
-    const TAB_ORDER = ['dashboard', 'maintenance', 'fuel', 'mods', 'trails', 'parts', 'settings'];
+    const TAB_ORDER = ['dashboard', 'maintenance', 'fuel', 'mods', 'trails', 'parts', 'docs', 'settings'];
 
     // Seed data
     // UI functions
@@ -2107,6 +2220,7 @@
         try { await loadMods(); } catch (err) { console.error('refresh loadMods', err); }
         try { await loadParts(); } catch (err) { console.error('refresh loadParts', err); }
         try { await loadTrails(); } catch (err) { console.error('refresh loadTrails', err); }
+        try { await loadDocs(); } catch (err) { console.error('refresh loadDocs', err); }
         try { refreshInstallStatus(); } catch (err) { console.error('refresh installStatus', err); }
         try { refreshCacheInfo(); } catch (err) { console.error('refresh cacheInfo', err); }
       } else {
@@ -2161,6 +2275,7 @@
       else if (name === 'mods')   await loadMods();
       else if (name === 'trails') await loadTrails();
       else if (name === 'parts')  await loadParts();
+      else if (name === 'docs')   await loadDocs();
     });
 
     // Modal focus management. On open, stash the currently-focused element,
@@ -2210,6 +2325,12 @@
         if (!document.getElementById('modDate').value) document.getElementById('modDate').value = today;
       } else if (tab === 'trails' && !editState.trails) {
         if (!document.getElementById('trailDate').value) document.getElementById('trailDate').value = today;
+      } else if (tab === 'docs' && !editState.docs) {
+        if (!document.getElementById('docExpirationDate').value) {
+          // Default expiration a year out — matches most registration / insurance cycles.
+          const oneYear = new Date(); oneYear.setFullYear(oneYear.getFullYear() + 1);
+          document.getElementById('docExpirationDate').value = oneYear.toISOString().split('T')[0];
+        }
       }
     }
 
@@ -2228,6 +2349,7 @@
       else if (tab === 'mods') loadMods();
       else if (tab === 'parts') loadParts();
       else if (tab === 'trails') loadTrails();
+      else if (tab === 'docs') loadDocs();
       else if (tab === 'dashboard') loadDashboard();
       else if (tab === 'settings') restoreDraft('vehicleForm');
       autofillFormDefaults(tab);
@@ -2277,7 +2399,7 @@
     // at 2000. Default cap + opt-in "Show all" button keeps the first render
     // cheap; Show-all state is session-only so it resets on reload.
     const DEFAULT_LIST_CAP = 100;
-    const listShowAll = { maintenance: false, fuel: false, mods: false, trails: false, parts: false };
+    const listShowAll = { maintenance: false, fuel: false, mods: false, trails: false, parts: false, docs: false };
     function capList(listName, filtered) {
       if (listShowAll[listName] || filtered.length <= DEFAULT_LIST_CAP) {
         return { items: filtered, truncated: 0 };
@@ -2395,7 +2517,7 @@
       toastTimeoutId = setTimeout(hideToast, ms);
     }
     // Edit-mode tracking per form
-    const editState = { maintenance: null, fuel: null, mods: null, parts: null, trails: null, trailsCreatedAt: null };
+    const editState = { maintenance: null, fuel: null, mods: null, parts: null, trails: null, docs: null, trailsCreatedAt: null };
     function setEditBanner(formEl, labelText, onCancel) {
       let banner = formEl.querySelector('.edit-banner');
       if (!labelText) {
@@ -2612,6 +2734,20 @@
             </li>`;
           }).join('') + overflowLi
         : `<li>${escHtml(t('noUpcomingReminders'))}</li>`;
+
+      // Document expirations — show only overdue + due-soon so the card stays
+      // quiet until something needs attention.
+      const allDocs = (await db.getAll('documents')).filter(d => d.vehicleId === activeVehicleId);
+      const pressingDocs = allDocs
+        .map(d => ({ d, sev: docSeverity(d.expirationDate, d.reminderDays) }))
+        .filter(x => x.sev.status !== 'active')
+        .sort((a, b) => a.sev.days - b.sev.days);
+      document.getElementById('docExpirations').innerHTML = pressingDocs.length > 0
+        ? pressingDocs.map(({ d, sev }) => {
+            const typeKey = d.type ? `docType${d.type.charAt(0).toUpperCase()}${d.type.slice(1)}` : 'docTypeOther';
+            return `<li class="reminder-item ${sev.status}"><strong>${escHtml(t(typeKey))}</strong>: ${escHtml(d.name)} — ${escHtml(docSeverityLabel(sev))}</li>`;
+          }).join('')
+        : `<li>${escHtml(t('noDocExpirations'))}</li>`;
 
       // Budget card (this month + year)
       const monthKey = currentDate.slice(0, 7);
@@ -3912,7 +4048,7 @@
       if (!confirm(prompt)) return;
       // cascade: delete this vehicle's maintenance, fuel, mods, parts, trails —
       // one transaction per store instead of one per row.
-      for (const store of ['maintenance', 'fuel', 'mods', 'parts', 'trails']) {
+      for (const store of ['maintenance', 'fuel', 'mods', 'parts', 'trails', 'documents']) {
         const items = (await db.getAll(store)).filter(x => x.vehicleId === activeVehicleId);
         await db.deleteAll(store, items.map(x => x.id));
       }
@@ -4444,6 +4580,171 @@ ${mods.map(m => `<tr><td>${escHtml(m.date)}</td><td>${escHtml(m.category)}</td><
       }
     });
 
+    // Documents & Expirations
+    let docPhotoDataUrl = null;
+    document.getElementById('docPhotoFile').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      const preview = document.getElementById('docPhotoPreview');
+      if (!file) { docPhotoDataUrl = null; preview.classList.add('hidden'); preview.removeAttribute('src'); return; }
+      docPhotoDataUrl = await compressImage(file);
+      preview.src = docPhotoDataUrl;
+      preview.classList.remove('hidden');
+    });
+
+    // Severity anchored on calendar-day deltas (not ms) so "expires today" reads
+    // correctly regardless of the time the app is opened.
+    function docSeverity(expirationDate, reminderDays = 30) {
+      if (!expirationDate) return { status: 'active', days: null };
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      const exp = new Date(expirationDate); exp.setHours(0, 0, 0, 0);
+      const days = Math.round((exp - today) / (24 * 3600 * 1000));
+      if (days < 0) return { status: 'overdue', days: -days };
+      if (days === 0) return { status: 'overdue', days: 0 };
+      if (days <= (+reminderDays || 30)) return { status: 'due-soon', days };
+      return { status: 'active', days };
+    }
+
+    function docSeverityLabel(sev) {
+      if (sev.status === 'overdue') {
+        if (sev.days === 0) return t('docExpiresToday');
+        return t('docExpired').replace('{d}', sev.days);
+      }
+      if (sev.status === 'due-soon') return t('docExpiresIn').replace('{d}', sev.days);
+      return t('docValid');
+    }
+
+    async function loadDocs() {
+      const items = (await db.getAll('documents')).filter(d => d.vehicleId === activeVehicleId);
+      items.sort((a, b) => new Date(a.expirationDate || '9999-12-31') - new Date(b.expirationDate || '9999-12-31'));
+      renderDocsList(items);
+      if (!editState.docs) restoreDraft('docsForm');
+    }
+
+    function renderDocsList(items) {
+      const list = document.getElementById('docsList');
+      list.className = 'entry-list';
+      if (items.length === 0) {
+        list.innerHTML = `<li class="empty-state">${t('noDocs')}</li>`;
+        return;
+      }
+      const query = (document.getElementById('docsSearch')?.value || '').toLowerCase().trim();
+      const filtered = query
+        ? items.filter(d => [d.name, d.provider, d.policyNumber, d.notes, d.type, d.expirationDate].some(v => String(v || '').toLowerCase().includes(query)))
+        : items;
+      if (!filtered.length) {
+        list.innerHTML = `<li class="empty-state">${t('noDocsMatch')}</li>`;
+        return;
+      }
+      const { items: capped, truncated } = capList('docs', filtered);
+      list.innerHTML = capped.map(d => {
+        const sev = docSeverity(d.expirationDate, d.reminderDays);
+        const severityBadge = sev.status === 'overdue'
+          ? `<span class="severe-service-badge" style="background:#dc2626;color:white;">${escHtml(docSeverityLabel(sev))}</span>`
+          : sev.status === 'due-soon'
+            ? `<span class="severe-service-badge" style="background:#d97706;color:white;">${escHtml(docSeverityLabel(sev))}</span>`
+            : `<span class="severe-service-badge" style="background:#059669;color:white;">${escHtml(docSeverityLabel(sev))}</span>`;
+        const typeKey = d.type ? `docType${d.type.charAt(0).toUpperCase()}${d.type.slice(1)}` : 'docTypeOther';
+        const typeLabel = t(typeKey);
+        const providerBit = d.provider ? ` · ${t('docProviderLabel')}: ${escHtml(d.provider)}` : '';
+        const policyBit = d.policyNumber ? ` · ${t('docPolicyLabel')}: ${escHtml(d.policyNumber)}` : '';
+        const costBit = d.cost != null && d.cost !== '' ? ` · ${currencySym()}${(+d.cost || 0).toFixed(2)}` : '';
+        const issuedBit = d.issueDate ? ` · ${t('docIssuedLabel')}: ${escHtml(d.issueDate)}` : '';
+        const expBit = d.expirationDate ? ` · ${t('docExpiresLabel')}: ${escHtml(d.expirationDate)}` : '';
+        const notesBit = d.notes ? ` · ${escHtml(d.notes)}` : '';
+        const photoBit = d.photo ? `<img src="${escHtml(d.photo)}" class="photo-thumb" alt="">` : '';
+        return `<li>
+          <span class="entry-main">${photoBit}${severityBadge} <strong>${escHtml(typeLabel)}</strong>: ${escHtml(d.name)}${providerBit}${policyBit}${issuedBit}${expBit}${costBit}${notesBit}</span>
+          ${rowActions(d.id)}
+        </li>`;
+      }).join('') + (truncated ? showAllButton('docs', truncated) : '');
+    }
+
+    function exitDocsEdit() {
+      editState.docs = null;
+      setEditBanner(document.getElementById('docsForm'), '', null);
+      document.querySelector('#docsForm button[type="submit"]').textContent = t('addDoc');
+    }
+
+    document.getElementById('docsForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!activeVehicleId) return;
+      const reminderDaysRaw = document.getElementById('docReminderDays').value;
+      const reminderDays = reminderDaysRaw === '' ? 30 : Math.max(1, Math.min(365, +reminderDaysRaw));
+      const doc = {
+        id: editState.docs || crypto.randomUUID(),
+        vehicleId: activeVehicleId,
+        type: document.getElementById('docType').value,
+        name: document.getElementById('docName').value.trim(),
+        provider: document.getElementById('docProvider').value.trim() || null,
+        policyNumber: document.getElementById('docPolicyNumber').value.trim() || null,
+        issueDate: document.getElementById('docIssueDate').value || null,
+        expirationDate: document.getElementById('docExpirationDate').value,
+        cost: document.getElementById('docCost').value === '' ? null : +document.getElementById('docCost').value,
+        reminderDays,
+        notes: document.getElementById('docNotes').value.trim() || null,
+        photo: docPhotoDataUrl,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      if (editState.docs) {
+        await db.put('documents', doc);
+      } else {
+        await db.add('documents', doc);
+      }
+      const form = document.getElementById('docsForm');
+      form.reset();
+      docPhotoDataUrl = null;
+      const preview = document.getElementById('docPhotoPreview');
+      preview.classList.add('hidden'); preview.removeAttribute('src');
+      exitDocsEdit();
+      await loadDocs();
+      await loadDashboard();
+      showToast(t('savedMsg'));
+    });
+
+    document.getElementById('docsSearch').addEventListener('input', async () => {
+      const items = (await db.getAll('documents')).filter(d => d.vehicleId === activeVehicleId);
+      items.sort((a, b) => new Date(a.expirationDate || '9999-12-31') - new Date(b.expirationDate || '9999-12-31'));
+      renderDocsList(items);
+    });
+
+    document.getElementById('docsList').addEventListener('click', async (e) => {
+      const delEl = e.target.closest('.del-btn');
+      if (delEl) {
+        await confirmDelete('documents', delEl.dataset.id, loadDocs);
+        return;
+      }
+      const editEl = e.target.closest('.edit-btn');
+      if (editEl) {
+        const items = await db.getAll('documents');
+        const d = items.find(x => x.id === editEl.dataset.id);
+        if (!d) return;
+        editState.docs = d.id;
+        document.getElementById('docType').value = d.type || 'other';
+        document.getElementById('docName').value = d.name || '';
+        document.getElementById('docProvider').value = d.provider || '';
+        document.getElementById('docPolicyNumber').value = d.policyNumber || '';
+        document.getElementById('docIssueDate').value = d.issueDate || '';
+        document.getElementById('docExpirationDate').value = d.expirationDate || '';
+        document.getElementById('docCost').value = d.cost != null ? d.cost : '';
+        document.getElementById('docReminderDays').value = d.reminderDays || 30;
+        document.getElementById('docNotes').value = d.notes || '';
+        docPhotoDataUrl = d.photo || null;
+        const preview = document.getElementById('docPhotoPreview');
+        if (d.photo) { preview.src = d.photo; preview.classList.remove('hidden'); }
+        else { preview.classList.add('hidden'); preview.removeAttribute('src'); }
+        const form = document.getElementById('docsForm');
+        setEditBanner(form, `${t('editingEntry')} ${d.name}`, () => {
+          form.reset();
+          docPhotoDataUrl = null;
+          preview.classList.add('hidden'); preview.removeAttribute('src');
+          exitDocsEdit();
+        });
+        form.querySelector('button[type="submit"]').textContent = t('updateEntry');
+        form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+
     // Settings
     // Bump when the data shape changes meaningfully — import uses this to warn
     // if a backup was made with a newer or older schema than the current app.
@@ -4485,7 +4786,8 @@ ${mods.map(m => `<tr><td>${escHtml(m.date)}</td><td>${escHtml(m.category)}</td><
         fuel: await db.getAll('fuel'),
         mods: stripPhoto(await db.getAll('mods')),
         parts: await db.getAll('parts'),
-        trails: await db.getAll('trails')
+        trails: await db.getAll('trails'),
+        documents: stripPhoto(await db.getAll('documents'))
       };
       const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
@@ -4505,7 +4807,7 @@ ${mods.map(m => `<tr><td>${escHtml(m.date)}</td><td>${escHtml(m.category)}</td><
       for (const v of data.vehicles) {
         if (!v || typeof v !== 'object' || typeof v.id !== 'string' || typeof v.nickname !== 'string') return 'invalid vehicle entry';
       }
-      for (const key of ['maintenance', 'fuel', 'mods', 'parts', 'trails']) {
+      for (const key of ['maintenance', 'fuel', 'mods', 'parts', 'trails', 'documents']) {
         if (data[key] !== undefined && !Array.isArray(data[key])) return `${key} must be an array`;
         for (const it of data[key] || []) {
           if (!it || typeof it !== 'object' || typeof it.id !== 'string') return `invalid ${key} entry (missing id)`;
@@ -4515,7 +4817,7 @@ ${mods.map(m => `<tr><td>${escHtml(m.date)}</td><td>${escHtml(m.category)}</td><
       // merged file and will render blank on every tab. Block rather than
       // silently import garbage.
       const vehicleIds = new Set(data.vehicles.map(v => v.id));
-      for (const key of ['maintenance', 'fuel', 'mods', 'parts', 'trails']) {
+      for (const key of ['maintenance', 'fuel', 'mods', 'parts', 'trails', 'documents']) {
         for (const it of data[key] || []) {
           if (it.vehicleId && !vehicleIds.has(it.vehicleId)) return 'vehicleId mismatch';
         }
@@ -4547,6 +4849,7 @@ ${mods.map(m => `<tr><td>${escHtml(m.date)}</td><td>${escHtml(m.category)}</td><
       try { await loadMods(); } catch (err) { console.error('selectVehicleChip loadMods', err); }
       try { await loadParts(); } catch (err) { console.error('selectVehicleChip loadParts', err); }
       try { await loadTrails(); } catch (err) { console.error('selectVehicleChip loadTrails', err); }
+      try { await loadDocs(); } catch (err) { console.error('selectVehicleChip loadDocs', err); }
     }
     document.getElementById('vehicleSwitcher').addEventListener('click', (e) => {
       const chip = e.target.closest('.vehicle-chip');
@@ -4654,11 +4957,11 @@ ${mods.map(m => `<tr><td>${escHtml(m.date)}</td><td>${escHtml(m.category)}</td><
       const banner = document.getElementById('savedDataBanner');
       const info = document.getElementById('savedDataInfo');
       if (!banner || !info) return;
-      const [vehicles, maintenance, fuel, mods, parts] = await Promise.all([
+      const [vehicles, maintenance, fuel, mods, parts, documents] = await Promise.all([
         db.getAll('vehicles'), db.getAll('maintenance'), db.getAll('fuel'),
-        db.getAll('mods'), db.getAll('parts')
+        db.getAll('mods'), db.getAll('parts'), db.getAll('documents')
       ]);
-      const entryCount = maintenance.length + fuel.length + mods.length + parts.length;
+      const entryCount = maintenance.length + fuel.length + mods.length + parts.length + documents.length;
       // Show banner only if there's meaningful history: real user entries, a
       // custom-added vehicle beyond the two seeds, or a prior session recorded
       // in localStorage.
@@ -4673,6 +4976,7 @@ ${mods.map(m => `<tr><td>${escHtml(m.date)}</td><td>${escHtml(m.category)}</td><
       if (fuel.length) bits.push(`${fuel.length} ${t('savedInfoFuel')}`);
       if (mods.length) bits.push(`${mods.length} ${t('savedInfoMods')}`);
       if (parts.length) bits.push(`${parts.length} ${t('savedInfoParts')}`);
+      if (documents.length) bits.push(`${documents.length} ${t('savedInfoDocs')}`);
       info.textContent = bits.join(' · ');
       banner.classList.remove('hidden');
     }
@@ -4684,7 +4988,8 @@ ${mods.map(m => `<tr><td>${escHtml(m.date)}</td><td>${escHtml(m.category)}</td><
         fuel: await db.getAll('fuel'),
         mods: await db.getAll('mods'),
         parts: await db.getAll('parts'),
-        trails: await db.getAll('trails')
+        trails: await db.getAll('trails'),
+        documents: await db.getAll('documents')
       };
       const vehicle = data.vehicles.find(v => v.id === activeVehicleId) || data.vehicles[0];
       const slug = (vehicle?.nickname || 'all').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'all';
@@ -4766,13 +5071,13 @@ ${mods.map(m => `<tr><td>${escHtml(m.date)}</td><td>${escHtml(m.category)}</td><
       }
     }, { passive: true });
 
-    // Keyboard: 1-7 switches tabs, ? opens help, Escape cancels edit / closes modals
+    // Keyboard: 1-8 switches tabs, ? opens help, Escape cancels edit / closes modals
     document.addEventListener('keydown', (e) => {
       if (document.getElementById('loader').style.display !== 'none') return;
       const tag = document.activeElement?.tagName;
       const inField = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
       if (!inField && !e.metaKey && !e.ctrlKey && !e.altKey) {
-        if (/^[1-7]$/.test(e.key)) {
+        if (/^[1-8]$/.test(e.key)) {
           e.preventDefault();
           switchTab(TAB_ORDER[+e.key - 1]);
           return;
@@ -4802,6 +5107,13 @@ ${mods.map(m => `<tr><td>${escHtml(m.date)}</td><td>${escHtml(m.category)}</td><
           document.getElementById('trailWaterDepthWrap').classList.add('hidden');
           document.getElementById('trailDamageNotes').classList.add('hidden');
           exitTrailsEdit();
+        }
+        if (editState.docs) {
+          document.getElementById('docsForm').reset();
+          docPhotoDataUrl = null;
+          const pv = document.getElementById('docPhotoPreview');
+          pv.classList.add('hidden'); pv.removeAttribute('src');
+          exitDocsEdit();
         }
       }
     });
@@ -4877,6 +5189,7 @@ ${mods.map(m => `<tr><td>${escHtml(m.date)}</td><td>${escHtml(m.category)}</td><
       await db.addAll('mods', data.mods || []);
       await db.addAll('parts', data.parts || []);
       await db.addAll('trails', data.trails || []);
+      await db.addAll('documents', data.documents || []);
       // Restore user-preference settings if the backup carried them. Matches
       // the export side symmetrically so a round-trip is truly lossless.
       let restoredLang = null;
@@ -4895,6 +5208,7 @@ ${mods.map(m => `<tr><td>${escHtml(m.date)}</td><td>${escHtml(m.category)}</td><
       try { await loadMods(); } catch (err) { console.error('import loadMods', err); }
       try { await loadParts(); } catch (err) { console.error('import loadParts', err); }
       try { await loadTrails(); } catch (err) { console.error('import loadTrails', err); }
+      try { await loadDocs(); } catch (err) { console.error('import loadDocs', err); }
       // Reapply restored language last — sweeps i18n-tagged DOM elements
       // so labels reflect the backup's language.
       if (restoredLang) setLang(restoredLang);
@@ -5157,7 +5471,7 @@ ${mods.map(m => `<tr><td>${escHtml(m.date)}</td><td>${escHtml(m.category)}</td><
       setTheme(theme);
       // Wire draft auto-save once — listeners are idempotent but persist()
       // captures the form by id at call time so one-time wiring is enough.
-      ['vehicleForm', 'maintenanceForm', 'fuelForm', 'modsForm', 'trailsForm', 'partsForm']
+      ['vehicleForm', 'maintenanceForm', 'fuelForm', 'modsForm', 'trailsForm', 'partsForm', 'docsForm']
         .forEach(wireDraftAutoSave);
       await loadVehicles();
       switchTab(lastTab);
@@ -5166,6 +5480,7 @@ ${mods.map(m => `<tr><td>${escHtml(m.date)}</td><td>${escHtml(m.category)}</td><
       loadMaintenance();
       loadParts();
       loadTrails();
+      loadDocs();
       refreshInstallStatus();
       refreshCacheInfo();
     }
